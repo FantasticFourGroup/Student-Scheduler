@@ -20,7 +20,7 @@ jobs:
             - ./node_modules
       - run:
           name: Vitest
-          command: npm run
+          command: npm run test
       - run:
           name: Build
           command: npm run build
