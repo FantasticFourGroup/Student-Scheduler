@@ -1,45 +1,143 @@
-import { useState } from "react";
-import ReactDOM from "react-dom";
-import "resize-observer-polyfill/dist/ResizeObserver.global";
-import { TimeGridScheduler, classes } from "@remotelock/react-week-scheduler";
-import "@remotelock/react-week-scheduler/index.css";
-import "./index.css";
+import React, { useState, useCallback, memo } from "react";
+import Paper from "@mui/material/Paper";
+import { styled } from "@mui/material/styles";
+import {
+	ViewState,
+	EditingState,
+	IntegratedEditing,
+} from "@devexpress/dx-react-scheduler";
+import {
+	Scheduler,
+	WeekView,
+	Appointments,
+	AppointmentForm,
+	AppointmentTooltip,
+	DragDropProvider,
+} from "@devexpress/dx-react-scheduler-material-ui";
 
-const rangeStrings = [
-	["2019-03-03T22:45:00.000Z", "2019-03-04T01:15:00.000Z"],
-	["2019-03-04T22:15:00.000Z", "2019-03-05T01:00:00.000Z"],
-	["2019-03-05T22:00:00.000Z", "2019-03-06T01:00:00.000Z"],
-	["2019-03-06T22:00:00.000Z", "2019-03-07T01:00:00.000Z"],
-	["2019-03-07T05:30:00.000Z", "2019-03-07T10:00:00.000Z"],
-	["2019-03-08T22:00:00.000Z", "2019-03-09T01:00:00.000Z"],
-	["2019-03-09T22:00:00.000Z", "2019-03-10T01:00:00.000Z"],
-];
+import { appointments } from "../demo-data/appointments";
 
-const defaultSchedule = rangeStrings.map((range) =>
-	range.map((dateString) => new Date(dateString))
-);
+interface Props {
+	classes: any;
+}
 
-export default function App() {
-	const [schedule, setSchedule] = useState(defaultSchedule);
+const PREFIX = "Demo";
+// #FOLD_BLOCK
+export const classes = {
+	container: `${PREFIX}-container`,
+	text: `${PREFIX}-text`,
+	formControlLabel: `${PREFIX}-formControlLabel`,
+};
+// #FOLD_BLOCK
+const StyledDiv = styled("div")(({ theme }) => ({
+	[`&.${classes.container}`]: {
+		margin: theme.spacing(2),
+		padding: theme.spacing(2),
+	},
+	[`& .${classes.text}`]: theme.typography.h6,
+	[`& .${classes.formControlLabel}`]: {
+		...theme.typography.caption,
+		fontSize: "1rem",
+	},
+}));
+
+const currentDate = "2018-06-27";
+
+export default () => {
+	const [data, setData] = useState(appointments);
+	const [editingOptions, setEditingOptions] = useState({
+		allowAdding: true,
+		allowDeleting: true,
+		allowUpdating: true,
+		allowDragging: true,
+		allowResizing: true,
+	});
+	const [addedAppointment, setAddedAppointment] = useState({});
+	const [isAppointmentBeingCreated, setIsAppointmentBeingCreated] =
+		useState(false);
+
+	const {
+		allowAdding,
+		allowDeleting,
+		allowUpdating,
+		allowResizing,
+		allowDragging,
+	} = editingOptions;
+
+	const onCommitChanges = useCallback(
+		({ added, changed, deleted }) => {
+			if (added) {
+				const startingAddedId =
+					data.length > 0 ? data[data.length - 1].id + 1 : 0;
+				setData([...data, { id: startingAddedId, ...added }]);
+			}
+			if (changed) {
+				setData(
+					data.map((appointment) =>
+						changed[appointment.id]
+							? { ...appointment, ...changed[appointment.id] }
+							: appointment
+					)
+				);
+			}
+			if (deleted !== undefined) {
+				setData(data.filter((appointment) => appointment.id !== deleted));
+			}
+			setIsAppointmentBeingCreated(false);
+		},
+		[setData, setIsAppointmentBeingCreated, data]
+	);
+	const onAddedAppointmentChange = useCallback((appointment) => {
+		setAddedAppointment(appointment);
+		setIsAppointmentBeingCreated(true);
+	}, []);
+
+	const TimeTableCell = useCallback(
+		memo(({ onDoubleClick, ...restProps }: any) => (
+			<WeekView.TimeTableCell
+				{...restProps}
+				onDoubleClick={allowAdding ? onDoubleClick : undefined}
+			/>
+		)),
+		[allowAdding]
+	);
+
+	const allowDrag = useCallback(
+		() => allowDragging && allowUpdating,
+		[allowDragging, allowUpdating]
+	);
+	const allowResize = useCallback(
+		() => allowResizing && allowUpdating,
+		[allowResizing, allowUpdating]
+	);
 
 	return (
-		<div
-			className="root"
-			style={{
-				width: "100vw",
-				height: "600px",
-			}}
-		>
-			<TimeGridScheduler
-				classes={classes}
-				style={{ width: "100%", height: "100%" }}
-				originDate={new Date("2019-03-04")}
-				schedule={schedule}
-				onChange={setSchedule}
-				visualGridVerticalPrecision={15}
-				verticalPrecision={15}
-				cellClickPrecision={60}
-			/>
-		</div>
+		<>
+			<Paper>
+				<Scheduler data={data} height={600}>
+					<ViewState currentDate={currentDate} />
+					<EditingState
+						onCommitChanges={onCommitChanges}
+						addedAppointment={addedAppointment}
+						onAddedAppointmentChange={onAddedAppointmentChange}
+					/>
+
+					<IntegratedEditing />
+					<WeekView
+						startDayHour={9}
+						endDayHour={19}
+						timeTableCellComponent={TimeTableCell}
+					/>
+
+					<Appointments />
+
+					<AppointmentTooltip showOpenButton showDeleteButton={allowDeleting} />
+					<AppointmentForm
+						readOnly={isAppointmentBeingCreated ? false : !allowUpdating}
+					/>
+					<DragDropProvider allowDrag={allowDrag} allowResize={allowResize} />
+				</Scheduler>
+			</Paper>
+		</>
 	);
-}
+};
