@@ -1,6 +1,5 @@
-import React, { useState, useCallback, memo } from "react";
+import * as React from "react";
 import Paper from "@mui/material/Paper";
-import { styled } from "@mui/material/styles";
 import {
 	ViewState,
 	EditingState,
@@ -17,10 +16,6 @@ import {
 
 import { appointments } from "../demo-data/appointments";
 
-interface Props {
-	classes: any;
-}
-
 const PREFIX = "Demo";
 // #FOLD_BLOCK
 export const classes = {
@@ -28,33 +23,21 @@ export const classes = {
 	text: `${PREFIX}-text`,
 	formControlLabel: `${PREFIX}-formControlLabel`,
 };
-// #FOLD_BLOCK
-const StyledDiv = styled("div")(({ theme }) => ({
-	[`&.${classes.container}`]: {
-		margin: theme.spacing(2),
-		padding: theme.spacing(2),
-	},
-	[`& .${classes.text}`]: theme.typography.h6,
-	[`& .${classes.formControlLabel}`]: {
-		...theme.typography.caption,
-		fontSize: "1rem",
-	},
-}));
 
 const currentDate = "2018-06-27";
 
 export default () => {
-	const [data, setData] = useState(appointments);
-	const [editingOptions, setEditingOptions] = useState({
+	const [data, setData] = React.useState(appointments);
+	const [editingOptions, setEditingOptions] = React.useState({
 		allowAdding: true,
 		allowDeleting: true,
 		allowUpdating: true,
 		allowDragging: true,
 		allowResizing: true,
 	});
-	const [addedAppointment, setAddedAppointment] = useState({});
+	const [addedAppointment, setAddedAppointment] = React.useState({});
 	const [isAppointmentBeingCreated, setIsAppointmentBeingCreated] =
-		useState(false);
+		React.useState(false);
 
 	const {
 		allowAdding,
@@ -64,7 +47,7 @@ export default () => {
 		allowDragging,
 	} = editingOptions;
 
-	const onCommitChanges = useCallback(
+	const onCommitChanges = React.useCallback(
 		({ added, changed, deleted }) => {
 			if (added) {
 				const startingAddedId =
@@ -87,13 +70,9 @@ export default () => {
 		},
 		[setData, setIsAppointmentBeingCreated, data]
 	);
-	const onAddedAppointmentChange = useCallback((appointment) => {
-		setAddedAppointment(appointment);
-		setIsAppointmentBeingCreated(true);
-	}, []);
 
-	const TimeTableCell = useCallback(
-		memo(({ onDoubleClick, ...restProps }: any) => (
+	const TimeTableCell = React.useCallback(
+		React.memo(({ onDoubleClick, ...restProps }: any) => (
 			<WeekView.TimeTableCell
 				{...restProps}
 				onDoubleClick={allowAdding ? onDoubleClick : undefined}
@@ -102,24 +81,23 @@ export default () => {
 		[allowAdding]
 	);
 
-	const allowDrag = useCallback(
+	const allowDrag = React.useCallback(
 		() => allowDragging && allowUpdating,
 		[allowDragging, allowUpdating]
 	);
-	const allowResize = useCallback(
+	const allowResize = React.useCallback(
 		() => allowResizing && allowUpdating,
 		[allowResizing, allowUpdating]
 	);
 
 	return (
-		<>
+		<React.Fragment>
 			<Paper>
 				<Scheduler data={data} height={600}>
 					<ViewState currentDate={currentDate} />
 					<EditingState
 						onCommitChanges={onCommitChanges}
 						addedAppointment={addedAppointment}
-						onAddedAppointmentChange={onAddedAppointmentChange}
 					/>
 
 					<IntegratedEditing />
@@ -138,6 +116,6 @@ export default () => {
 					<DragDropProvider allowDrag={allowDrag} allowResize={allowResize} />
 				</Scheduler>
 			</Paper>
-		</>
+		</React.Fragment>
 	);
 };

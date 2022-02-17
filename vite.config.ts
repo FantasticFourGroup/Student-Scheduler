@@ -7,5 +7,9 @@ export default defineConfig({
 	test: {
 		// ...
 	},
-	plugins: [react()],
+	plugins: [
+		react({
+			jsxRuntime: "classic",
+		}),
+	],
 });
