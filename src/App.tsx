@@ -1,45 +1,48 @@
 import { useState } from "react";
-import logo from "./logo.svg";
-import "./App.css";
+import ReactDOM from "react-dom";
+import "resize-observer-polyfill/dist/ResizeObserver.global";
+import { TimeGridScheduler, classes } from "@remotelock/react-week-scheduler";
+import "@remotelock/react-week-scheduler/index.css";
+import "./index.css";
 
-function App() {
-	const [count, setCount] = useState(0);
+const rangeStrings = [
+	["2019-03-03T22:45:00.000Z", "2019-03-04T01:15:00.000Z"],
+	["2019-03-04T22:15:00.000Z", "2019-03-05T01:00:00.000Z"],
+	["2019-03-05T22:00:00.000Z", "2019-03-06T01:00:00.000Z"],
+	["2019-03-06T22:00:00.000Z", "2019-03-07T01:00:00.000Z"],
+	["2019-03-07T05:30:00.000Z", "2019-03-07T10:00:00.000Z"],
+	["2019-03-08T22:00:00.000Z", "2019-03-09T01:00:00.000Z"],
+	["2019-03-09T22:00:00.000Z", "2019-03-10T01:00:00.000Z"],
+];
+
+const defaultSchedule = rangeStrings.map((range) =>
+	range.map((dateString) => new Date(dateString))
+);
+
+export default function App() {
+	const [schedule, setSchedule] = useState(defaultSchedule);
 
 	return (
-		<div className="App">
-			<header className="App-header">
-				<img src={logo} className="App-logo" alt="logo" />
-				<p>Hello Vite + React!</p>
-				<p>
-					<button type="button" onClick={() => setCount((count) => count + 1)}>
-						count is: {count}
-					</button>
-				</p>
-				<p>
-					Edit <code>App.tsx</code> and save to test HMR updates.
-				</p>
-				<p>
-					<a
-						className="App-link"
-						href="https://reactjs.org"
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						Learn React
-					</a>
-					{" | "}
-					<a
-						className="App-link"
-						href="https://vitejs.dev/guide/features.html"
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						Vite Docs
-					</a>
-				</p>
-			</header>
+		<div
+			className="root"
+			style={{
+				width: "100vw",
+				height: "600px",
+			}}
+		>
+			<TimeGridScheduler
+				classes={classes}
+				style={{ width: "100%", height: "100%" }}
+				originDate={new Date("2019-03-04")}
+				schedule={schedule}
+				onChange={setSchedule}
+				visualGridVerticalPrecision={15}
+				verticalPrecision={15}
+				cellClickPrecision={60}
+			/>
 		</div>
 	);
 }
 
-export default App;
+const rootElement = document.getElementById("root");
+ReactDOM.render(<App />, rootElement);
