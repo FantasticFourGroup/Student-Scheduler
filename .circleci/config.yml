@@ -19,16 +19,26 @@ jobs:
           paths:
             - ./node_modules
   test:
-    - run:
-        name: Vitest
-        command: npm run test
-    - run:
-        name: Build
-        command: npm run build
+    working_directory: ~/repo
+      docker:
+        - image: cimg/node:14.17
+      steps:
+        - checkout
+        - run:
+            name: Vitest
+            command: npm run test
+        - run:
+            name: Build
+            command: npm run build
   deploy:
-    - run:
-        name: Deploy to Netlify
-        command: ./node_modules/.bin/netlify deploy --site $NETLIFY_SITE_ID --auth $NETLIFY_ACCESS_TOKEN --prod --dir=dist
+    working_directory: ~/repo
+    docker:
+      - image: cimg/node:14.17
+    steps:
+      - checkout
+      - run:
+          name: Deploy to Netlify
+          command: ./node_modules/.bin/netlify deploy --site $NETLIFY_SITE_ID --auth $NETLIFY_ACCESS_TOKEN --prod --dir=dist
 workflows:
   version: 2
   build-deploy:
