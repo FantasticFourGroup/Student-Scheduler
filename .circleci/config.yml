@@ -1,48 +1,81 @@
-version: 2.1
-jobs:
-  build_and_test:
-    working_directory: ~/repo
+executors:
+  node:
     docker:
-      - image: cimg/node:14.17
+      - image: circleci/node:14
+
+aliases:
+  restore_cache: &restore_cache
+    restore_cache:
+      name: Restore Npm Package Cache
+      keys:
+        - dependency-cache-{{ checksum "package-lock.json" }}
+
+  install_node_modules: &install_node_modules
+    run:
+      name: Install dependencies
+      command: npm install
+
+  save_cache: &save_cache
+    save_cache:
+      name: Save NPM package cache
+      key: dependency-cache-{{ checksum "package-lock.json" }}
+      paths:
+        - ./node_modules
+
+version: 2.1
+
+jobs:
+  test:
+    executor: node
     steps:
       - checkout
+      - <<: *restore_cache
+      - <<: *install_node_modules
+      - <<: *save_cache
       - run:
-          name: Update NPM
-          command: "sudo npm install -g npm"
-      - restore_cache:
-          key: dependency-cache-{{ checksum "package-lock.json" }}
-      - run:
-          name: Install Dependencies
-          command: npm install
-      - save_cache:
-          key: dependency-cache-{{ checksum "package-lock.json" }}
-          paths:
-            - ./node_modules
-      - run:
-          name: Vitest
+          name: Test
           command: npm run test
+
+  build:
+    executor: node
+    steps:
+      - checkout
+      - <<: *restore_cache
+      - <<: *install_node_modules
       - run:
           name: Build
           command: npm run build
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - dist
+
   deploy:
-    working_directory: ~/repo
-    docker:
-      - image: cimg/node:14.17
+    executor: node
     steps:
+      - checkout
       - attach_workspace:
-          at: ~/repo
+          at: ./
+      - <<: *restore_cache
+      - <<: *install_node_modules
       - run:
+          name: Install netlify-cli
+          command: sudo npm install --unsafe-perm=true -g --silent netlify-cli
+      - run: 
           name: Deploy to Netlify
-          command: ./node_modules/.bin/netlify deploy --site $NETLIFY_SITE_ID --auth $NETLIFY_ACCESS_TOKEN --prod --dir=dist
+          command: netlify deploy --site $NETLIFY_SITE_ID --auth $NETLIFY_ACCESS_TOKEN --prod --dir=dist
+
 workflows:
   version: 2
-  build-deploy:
+  build_and_deploy:
     jobs:
-      - build_and_test
+      - test
+      - build:
+          requires:
+            - test
       - deploy:
           requires:
-            - build_and_test
+            - build
           filters:
             branches:
-              only:
-                - main
+              only: main
