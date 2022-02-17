@@ -1,221 +1,111 @@
-// @ts-nocheck
-import * as React from "react";
-import Paper from "@mui/material/Paper";
-import FormGroup from "@mui/material/FormGroup";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Typography from "@mui/material/FormControl";
-import { styled } from "@mui/material/styles";
-import {
-	ViewState,
-	EditingState,
-	IntegratedEditing,
-} from "@devexpress/dx-react-scheduler";
-import {
-	Scheduler,
-	WeekView,
-	Appointments,
-	AppointmentForm,
-	AppointmentTooltip,
-	DragDropProvider,
-} from "@devexpress/dx-react-scheduler-material-ui";
-
-import { appointments } from "../demo-data/appointments";
-import {
-	OptionProps,
-	EditingOptionsSelectorProps,
-	EditingOptionsProps,
-} from "./types";
-
-const PREFIX = "Demo";
-// #FOLD_BLOCK
-export const classes = {
-	container: `${PREFIX}-container`,
-	text: `${PREFIX}-text`,
-	formControlLabel: `${PREFIX}-formControlLabel`,
-};
-// #FOLD_BLOCK
-const StyledDiv = styled("div")(({ theme }) => ({
-	[`&.${classes.container}`]: {
-		margin: theme.spacing(2),
-		padding: theme.spacing(2),
+export const appointments = [
+	{
+		title: "SE-2223",
+		startDate: new Date(2018, 5, 25, 7),
+		endDate: new Date(2018, 5, 25, 10),
+		id: 0,
 	},
-	[`& .${classes.text}`]: theme.typography.h6,
-	[`& .${classes.formControlLabel}`]: {
-		...theme.typography.caption,
-		fontSize: "1rem",
+	{
+		title: "SE-2221",
+		startDate: new Date(2018, 5, 25, 10),
+		endDate: new Date(2018, 5, 25, 11),
+		id: 1,
 	},
-}));
-
-const currentDate = "2018-06-27";
-const editingOptionsList: Array<EditingOptionsProps> = [
-	{ id: "allowAdding", text: "Adding" },
-	{ id: "allowDeleting", text: "Deleting" },
-	{ id: "allowUpdating", text: "Updating" },
-	{ id: "allowResizing", text: "Resizing" },
-	{ id: "allowDragging", text: "Dragging" },
-];
-
-const EditingOptionsSelector = ({
-	options,
-	onOptionsChange,
-}: EditingOptionsSelectorProps) => (
-	<StyledDiv className={classes.container}>
-		<Typography className={classes.text}>Enabled Options</Typography>
-		<FormGroup row>
-			{editingOptionsList.map(({ id, text }) => (
-				<FormControlLabel
-					control={
-						<Checkbox
-							checked={options[id]}
-							onChange={onOptionsChange}
-							value={id}
-							color="primary"
-						/>
-					}
-					classes={{ label: classes.formControlLabel }}
-					label={text}
-					key={id}
-					disabled={
-						(id === "allowDragging" || id === "allowResizing") &&
-						!options.allowUpdating
-					}
-				/>
-			))}
-		</FormGroup>
-	</StyledDiv>
-);
-
-const options: OptionProps = {
-	allowAdding: true,
-	allowDeleting: true,
-	allowUpdating: true,
-	allowDragging: true,
-	allowResizing: true,
-};
-
-export default () => {
-	const [data, setData] = React.useState(appointments);
-	const [editingOptions, setEditingOptions] =
-		React.useState<OptionProps>(options);
-	const [addedAppointment, setAddedAppointment] = React.useState({});
-	const [isAppointmentBeingCreated, setIsAppointmentBeingCreated] =
-		React.useState(false);
-
-	const {
-		allowAdding,
-		allowDeleting,
-		allowUpdating,
-		allowResizing,
-		allowDragging,
-	} = editingOptions;
-
-	const onCommitChanges = React.useCallback(
-		({ added, changed, deleted }) => {
-			if (added) {
-				const startingAddedId =
-					data.length > 0 ? data[data.length - 1].id + 1 : 0;
-				setData([...data, { id: startingAddedId, ...added }]);
-			}
-			if (changed) {
-				setData(
-					data.map((appointment) =>
-						changed[appointment.id]
-							? { ...appointment, ...changed[appointment.id] }
-							: appointment
-					)
-				);
-			}
-			if (deleted !== undefined) {
-				setData(data.filter((appointment) => appointment.id !== deleted));
-			}
-			setIsAppointmentBeingCreated(false);
-		},
-		[setData, setIsAppointmentBeingCreated, data]
-	);
-	const onAddedAppointmentChange = React.useCallback((appointment) => {
-		setAddedAppointment(appointment);
-		setIsAppointmentBeingCreated(true);
-	}, []);
-	const handleEditingOptionsChange = React.useCallback(
-		({ target }) => {
-			const { value } = target;
-			const { [value as number]: checked } = editingOptions;
-			setEditingOptions({
-				...editingOptions,
-				[value]: !checked,
-			});
-		},
-		[editingOptions]
-	);
-
-	const TimeTableCell = React.useCallback(
-		React.memo(({ onDoubleClick, ...restProps }) => (
-			<WeekView.TimeTableCell
-				{...restProps}
-				onDoubleClick={allowAdding ? onDoubleClick : undefined}
-			/>
-		)),
-		[allowAdding]
-	);
-
-	const CommandButton = React.useCallback(
-		({ id, ...restProps }) => {
-			if (id === "deleteButton") {
-				return (
-					<AppointmentForm.CommandButton
-						id={id}
-						{...restProps}
-						disabled={!allowDeleting}
-					/>
-				);
-			}
-			return <AppointmentForm.CommandButton id={id} {...restProps} />;
-		},
-		[allowDeleting]
-	);
-
-	const allowDrag = React.useCallback(
-		() => allowDragging && allowUpdating,
-		[allowDragging, allowUpdating]
-	);
-	const allowResize = React.useCallback(
-		() => allowResizing && allowUpdating,
-		[allowResizing, allowUpdating]
-	);
-
-	return (
-		<React.Fragment>
-			<EditingOptionsSelector
-				options={editingOptions}
-				onOptionsChange={handleEditingOptionsChange}
-			/>
-			<Paper>
-				<Scheduler data={data} height={600}>
-					<ViewState currentDate={currentDate} />
-					<EditingState
-						onCommitChanges={onCommitChanges}
-						addedAppointment={addedAppointment}
-						onAddedAppointmentChange={onAddedAppointmentChange}
-					/>
-
-					<IntegratedEditing />
-					<WeekView
-						startDayHour={9}
-						endDayHour={19}
-						timeTableCellComponent={TimeTableCell}
-					/>
-
-					<Appointments />
-
-					<AppointmentTooltip showOpenButton showDeleteButton={allowDeleting} />
-					<AppointmentForm
-						commandButtonComponent={CommandButton}
-						readOnly={isAppointmentBeingCreated ? false : !allowUpdating}
-					/>
-					<DragDropProvider allowDrag={allowDrag} allowResize={allowResize} />
-				</Scheduler>
-			</Paper>
-		</React.Fragment>
-	);
-};
+	{
+		title: "SE-2225",
+		startDate: new Date(2018, 5, 25, 16),
+		endDate: new Date(2018, 5, 25, 17, 30),
+		id: 2,
+	},
+	{
+		title: "SE-2223",
+		startDate: new Date(2018, 5, 26, 7, 0),
+		endDate: new Date(2018, 5, 26, 10, 0),
+		id: 3,
+	},
+	{
+		title: "Final Budget Review",
+		startDate: new Date(2018, 5, 27, 12, 0),
+		endDate: new Date(2018, 5, 26, 13, 35),
+		id: 4,
+		location: "Room 2",
+	},
+	{
+		title: "SE-2221",
+		startDate: new Date(2018, 5, 26, 10, 0),
+		endDate: new Date(2018, 5, 26, 11, 0),
+		id: 5,
+	},
+	{
+		title: "SE-2226",
+		startDate: new Date(2018, 5, 26, 13),
+		endDate: new Date(2018, 5, 26, 16),
+		id: 6,
+	},
+	{
+		title: "SE-2224",
+		startDate: new Date(2018, 5, 25, 19),
+		endDate: new Date(2018, 5, 25, 20, 30),
+		id: 8,
+	},
+	{
+		title: "SE-2225",
+		startDate: new Date(2018, 5, 26, 16, 0),
+		endDate: new Date(2018, 5, 26, 17, 30),
+		id: 9,
+	},
+	{
+		title: "SE-2222",
+		startDate: new Date(2018, 5, 28, 7, 0),
+		endDate: new Date(2018, 5, 28, 9, 0),
+		id: 10,
+	},
+	{
+		title: "SE-2221",
+		startDate: new Date(2018, 5, 28, 10, 0),
+		endDate: new Date(2018, 5, 28, 13, 0),
+		id: 11,
+	},
+	{
+		title: "SE-2225",
+		startDate: new Date(2018, 5, 28, 16, 0),
+		endDate: new Date(2018, 5, 28, 17, 30),
+		id: 12,
+	},
+	{
+		title: "SE-2224",
+		startDate: new Date(2018, 5, 28, 19, 0),
+		endDate: new Date(2018, 5, 28, 20, 30),
+		id: 13,
+	},
+	{
+		title: "SE-2222",
+		startDate: new Date(2018, 5, 29, 7, 0),
+		endDate: new Date(2018, 5, 29, 10, 0),
+		id: 14,
+	},
+	{
+		title: "EMATH-2200",
+		startDate: new Date(2018, 5, 29, 10, 0),
+		endDate: new Date(2018, 5, 29, 12, 0),
+		id: 15,
+	},
+	{
+		title: "SE-2226",
+		startDate: new Date(2018, 5, 29, 14, 0),
+		endDate: new Date(2018, 5, 29, 16, 0),
+		id: 16,
+	},
+	{
+		title: "SE-2250",
+		startDate: new Date(2018, 5, 29, 16, 0),
+		endDate: new Date(2018, 5, 29, 17, 0),
+		id: 17,
+	},
+	{
+		title: "SE-2222",
+		startDate: new Date(2018, 5, 30, 13, 0),
+		endDate: new Date(2018, 5, 30, 16, 0),
+		id: 18,
+	}
+]
