@@ -20,16 +20,16 @@ jobs:
             - ./node_modules
   test:
     working_directory: ~/repo
-      docker:
-        - image: cimg/node:14.17
-      steps:
-        - checkout
-        - run:
-            name: Vitest
-            command: npm run test
-        - run:
-            name: Build
-            command: npm run build
+    docker:
+      - image: cimg/node:14.17
+    steps:
+      - checkout
+      - run:
+          name: Vitest
+          command: npm run test
+      - run:
+          name: Build
+          command: npm run build
   deploy:
     working_directory: ~/repo
     docker:
