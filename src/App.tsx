@@ -1,11 +1,6 @@
 // @ts-nocheck
 import * as React from "react";
 import Paper from "@mui/material/Paper";
-import FormGroup from "@mui/material/FormGroup";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Typography from "@mui/material/FormControl";
-import { styled } from "@mui/material/styles";
 import {
 	ViewState,
 	EditingState,
@@ -21,11 +16,7 @@ import {
 } from "@devexpress/dx-react-scheduler-material-ui";
 
 import { appointments } from "../demo-data/appointments";
-import {
-	OptionProps,
-	EditingOptionsSelectorProps,
-	EditingOptionsProps,
-} from "./types";
+import { OptionProps } from "./types";
 
 const PREFIX = "Demo";
 // #FOLD_BLOCK
@@ -35,57 +26,8 @@ export const classes = {
 	formControlLabel: `${PREFIX}-formControlLabel`,
 };
 // #FOLD_BLOCK
-const StyledDiv = styled("div")(({ theme }) => ({
-	[`&.${classes.container}`]: {
-		margin: theme.spacing(2),
-		padding: theme.spacing(2),
-	},
-	[`& .${classes.text}`]: theme.typography.h6,
-	[`& .${classes.formControlLabel}`]: {
-		...theme.typography.caption,
-		fontSize: "1rem",
-	},
-}));
 
 const currentDate = "2018-06-27";
-const editingOptionsList: Array<EditingOptionsProps> = [
-	{ id: "allowAdding", text: "Adding" },
-	{ id: "allowDeleting", text: "Deleting" },
-	{ id: "allowUpdating", text: "Updating" },
-	{ id: "allowResizing", text: "Resizing" },
-	{ id: "allowDragging", text: "Dragging" },
-];
-
-const EditingOptionsSelector = ({
-	options,
-	onOptionsChange,
-}: EditingOptionsSelectorProps) => (
-	<StyledDiv className={classes.container}>
-		<Typography className={classes.text}>Enabled Options</Typography>
-		<FormGroup row>
-			{editingOptionsList.map(({ id, text }) => (
-				<FormControlLabel
-					control={
-						<Checkbox
-							checked={options[id]}
-							onChange={onOptionsChange}
-							value={id}
-							color="primary"
-						/>
-					}
-					classes={{ label: classes.formControlLabel }}
-					label={text}
-					key={id}
-					disabled={
-						(id === "allowDragging" || id === "allowResizing") &&
-						!options.allowUpdating
-					}
-				/>
-			))}
-		</FormGroup>
-	</StyledDiv>
-);
-
 const options: OptionProps = {
 	allowAdding: true,
 	allowDeleting: true,
@@ -96,8 +38,7 @@ const options: OptionProps = {
 
 export default () => {
 	const [data, setData] = React.useState(appointments);
-	const [editingOptions, setEditingOptions] =
-		React.useState<OptionProps>(options);
+	const [editingOptions] = React.useState<OptionProps>(options);
 	const [addedAppointment, setAddedAppointment] = React.useState({});
 	const [isAppointmentBeingCreated, setIsAppointmentBeingCreated] =
 		React.useState(false);
@@ -137,17 +78,6 @@ export default () => {
 		setAddedAppointment(appointment);
 		setIsAppointmentBeingCreated(true);
 	}, []);
-	const handleEditingOptionsChange = React.useCallback(
-		({ target }) => {
-			const { value } = target;
-			const { [value as number]: checked } = editingOptions;
-			setEditingOptions({
-				...editingOptions,
-				[value]: !checked,
-			});
-		},
-		[editingOptions]
-	);
 
 	const TimeTableCell = React.useCallback(
 		React.memo(({ onDoubleClick, ...restProps }) => (
@@ -186,10 +116,6 @@ export default () => {
 
 	return (
 		<React.Fragment>
-			<EditingOptionsSelector
-				options={editingOptions}
-				onOptionsChange={handleEditingOptionsChange}
-			/>
 			<Paper>
 				<Scheduler data={data} height={600}>
 					<ViewState currentDate={currentDate} />
