@@ -13,9 +13,11 @@ import {
 	AppointmentForm,
 	AppointmentTooltip,
 	DragDropProvider,
+	Resources,
 } from "@devexpress/dx-react-scheduler-material-ui";
 
 import { appointments } from "../demo-data/appointments";
+import { resourcesData } from "../demo-data/resources";
 import { OptionProps } from "./types";
 
 const PREFIX = "Demo";
@@ -35,6 +37,14 @@ const options: OptionProps = {
 	allowDragging: true,
 	allowResizing: true,
 };
+
+const resources = [
+	{
+		fieldName: "colorId",
+		title: "Color",
+		instances: resourcesData,
+	},
+];
 
 export default () => {
 	const [data, setData] = React.useState(appointments);
@@ -127,14 +137,15 @@ export default () => {
 
 					<IntegratedEditing />
 					<WeekView
-						startDayHour={9}
-						endDayHour={19}
+						startDayHour={6}
+						endDayHour={24}
 						timeTableCellComponent={TimeTableCell}
 					/>
 
 					<Appointments />
 
 					<AppointmentTooltip showOpenButton showDeleteButton={allowDeleting} />
+					<Resources data={resources} mainResourceName="colorId" />
 					<AppointmentForm
 						commandButtonComponent={CommandButton}
 						readOnly={isAppointmentBeingCreated ? false : !allowUpdating}
