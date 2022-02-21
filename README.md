@@ -2,6 +2,8 @@
 
 A student scheduler to manage and track class schedules
 
+[![CircleCI](https://circleci.com/gh/FantasticFourGroup/Student-Scheduler.svg?style=svg)](https://student-scheduler.netlify.app/)
+
 ![image](https://user-images.githubusercontent.com/49836841/154983680-b352b28a-cf8f-42aa-b7b7-d617a834a223.png)
 
 ![image](https://user-images.githubusercontent.com/49836841/154983778-c5626455-15ac-460d-bdd4-dd2a552ce756.png)
