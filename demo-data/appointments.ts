@@ -107,5 +107,5 @@ export const appointments = [
 		startDate: new Date(2018, 5, 30, 13, 0),
 		endDate: new Date(2018, 5, 30, 16, 0),
 		id: 18,
-	}
-]
+	},
+];
