@@ -1,9 +1,13 @@
 html,
 body {
-	margin: 0;
-	padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .root {
-	font-family: system-ui, sans-serif;
+  font-family: system-ui, sans-serif;
+}
+
+.Cell-dayOfMonth {
+  display: none;
 }
