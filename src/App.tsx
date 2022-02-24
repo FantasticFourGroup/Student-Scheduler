@@ -24,6 +24,8 @@ import {
 import { resourcesData } from "../demo-data/resources";
 import { OptionProps } from "./types";
 
+import hasNoOverlaps from "./utils/overlapChecker";
+
 const PREFIX = "Demo";
 // #FOLD_BLOCK
 export const classes = {
@@ -50,15 +52,13 @@ const resources = [
   },
 ];
 
-type SchedType = "maleSched" | "femaleSched";
-
 export default () => {
   const [data, setData] = useState(appointmentsMale);
   const [editingOptions] = useState<OptionProps>(options);
   const [addedAppointment, setAddedAppointment] = useState({});
 
   const [isAppointmentBeingCreated, setIsAppointmentBeingCreated] =
-    useState(false);
+    useState(false); // tobe Removed
 
   const [sched, setSched] = useState("maleSched");
 
@@ -82,30 +82,41 @@ export default () => {
 
   const onCommitChanges = React.useCallback(
     ({ added, changed, deleted }) => {
-      if (added) {
-        const startingAddedId =
-          data.length > 0 ? data[data.length - 1].id + 1 : 0;
-        setData([...data, { id: startingAddedId, ...added }]);
-      }
-      if (changed) {
-        setData(
-          data.map((appointment) =>
-            changed[appointment.id]
-              ? { ...appointment, ...changed[appointment.id] }
-              : appointment
-          )
-        );
-      }
-      if (deleted !== undefined) {
+      if (deleted) {
         setData(data.filter((appointment) => appointment.id !== deleted));
+        setIsAppointmentBeingCreated(false); //tobe Removed
+      } else {
+        const toCheck = added ?? {
+          ...Object.values(changed)[0],
+          id: Object.keys(changed)[0],
+        };
+
+        if (hasNoOverlaps(toCheck, data)) {
+          if (added) {
+            const startingAddedId =
+              data.length > 0 ? data[data.length - 1].id + 1 : 0;
+            setData([...data, { id: startingAddedId, ...added }]);
+          }
+          if (changed) {
+            setData(
+              data.map((appointment) =>
+                changed[appointment.id]
+                  ? { ...appointment, ...changed[appointment.id] }
+                  : appointment
+              )
+            );
+          }
+          setIsAppointmentBeingCreated(false); //tobeRemoved
+        } else {
+          alert("You have overlapping Schedule"); // ALERTT
+        }
       }
-      setIsAppointmentBeingCreated(false);
     },
     [setData, setIsAppointmentBeingCreated, data]
   );
   const onAddedAppointmentChange = React.useCallback((appointment) => {
     setAddedAppointment(appointment);
-    setIsAppointmentBeingCreated(true);
+    setIsAppointmentBeingCreated(true); //tobe Removed
   }, []);
 
   const TimeTableCell = React.useCallback(
@@ -167,12 +178,11 @@ export default () => {
           />
 
           <Appointments />
-
           <AppointmentTooltip showOpenButton showDeleteButton={allowDeleting} />
           <Resources data={resources} mainResourceName="colorId" />
           <AppointmentForm
             commandButtonComponent={CommandButton}
-            readOnly={isAppointmentBeingCreated ? false : !allowUpdating}
+            readOnly={isAppointmentBeingCreated ? false : !allowUpdating} // tobe Removed
           />
           <DragDropProvider allowDrag={allowDrag} allowResize={allowResize} />
         </Scheduler>
