@@ -1,0 +1,51 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "extends": [
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:prettier/recommended",
+    "plugin:jsx-a11y/strict",
+    "airbnb"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "plugins": ["react", "jsx-a11y", "@typescript-eslint"],
+  "rules": {
+    "react-hooks/exhaustive-deps": "error",
+    "no-var": "error",
+    "brace-style": "error",
+    "prefer-template": "error",
+    "radix": "error",
+    "space-before-blocks": "error",
+    "import/prefer-default-export": "off",
+    "quotes": "off",
+    "import/extensions": "off",
+    "import/no-unresolved": "off",
+    "react/jsx-filename-extension": "off",
+    "react/prop-types": "off",
+    "operator-linebreak": "off",
+    "linebreak-style": "off",
+    "prettier/prettier": "off"
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/*.test.js",
+        "**/*.test.jsx",
+        "**/*.test.tsx",
+        "**/*.spec.js",
+        "**/*.spec.jsx",
+        "**/*.spec.tsx"
+      ]
+    }
+  ]
+}
