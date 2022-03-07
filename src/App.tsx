@@ -168,7 +168,7 @@ export default () => {
         >
           <div>
             <Button variant="contained" onClick={handleOpenAppointmentForm}>
-              <AddIcon />
+              Create Course Schedule
             </Button>
           </div>
         </div>
