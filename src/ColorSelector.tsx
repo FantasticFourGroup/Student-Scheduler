@@ -23,7 +23,7 @@ interface ColorModel {
 
 const ColorSelector = ({ value, onChange, colors }: ColorSelectorProps) => {
   const menuItem = colors.map((color) => (
-    <MenuItem value={color.id}>
+    <MenuItem value={color.id} key={color.id}>
       <Brightness1 style={{ color: color.color }} />
       {color.text}
     </MenuItem>
@@ -33,13 +33,7 @@ const ColorSelector = ({ value, onChange, colors }: ColorSelectorProps) => {
     <FormControl sx={{ minWidth: 120 }}>
       <InputLabel id="label">Color</InputLabel>
 
-      <Select
-        labelId="label"
-        value={value}
-        label="Color"
-        onChange={onChange}
-        required
-      >
+      <Select labelId="label" value={value} label="Color" onChange={onChange}>
         <MenuItem value="">
           <em>None</em>
         </MenuItem>
