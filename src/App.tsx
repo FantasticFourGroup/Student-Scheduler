@@ -37,10 +37,13 @@ const resources = [
   },
 ];
 
-const sample = [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]];
+const sample = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 
-function makeAppointmentModels(records: RecordsModel): AppointmentModel[] {
-  return sample[0].flatMap((item: number) => {
+function makeAppointmentModels(
+  records: RecordsModel,
+  selectedItem: number[]
+): AppointmentModel[] {
+  return selectedItem.flatMap((item: number) => {
     const { title, stubCode, start, end, days, id, colorId } = records[item];
     return days.flatMap((day: string) => {
       return {
@@ -56,9 +59,14 @@ function makeAppointmentModels(records: RecordsModel): AppointmentModel[] {
 
 export default () => {
   const [records, setRecords] = useState(appointmentsRecords);
-  const [data, setData] = useState(makeAppointmentModels(records));
+  const [selectedAppointments, setSelectedAppointments] = useState(sample);
+  const [selectedValues, setSelectedValue] = useState(
+    selectedAppointments.join(", ")
+  );
+  const [data, setData] = useState(
+    makeAppointmentModels(records, selectedAppointments)
+  );
 
-  const [sched, setSched] = useState("maleSched");
   const [openAppointmentForm, setOpenAppoinmentForm] = useState(false);
   const [editAppointment, setEditAppointment] = useState(0);
 
@@ -67,12 +75,13 @@ export default () => {
       if (deleted) {
         setData(data.filter((appointment) => appointment.id !== deleted));
       } else {
+        console.log(changed, "jhiuwyaguyegweiuiquwqwiuhgeiuqhewiuqwheiuhq");
         const toCheck = added ?? {
           ...(Object.values(changed)[0] as AppointmentModel),
           id: Object.keys(changed)[0],
         };
 
-        if (hasNoOverlaps(toCheck, data as [AppointmentModel])) {
+        if (hasNoOverlaps(toCheck, data)) {
           if (added) {
             const startingAddedId =
               data.length > 0 ? data[data.length - 1].id + 1 : 0;
@@ -118,13 +127,28 @@ export default () => {
 
   function handleSubmit(records: RecordsModel) {
     setRecords(records);
-    setData(makeAppointmentModels(records));
+    setData(makeAppointmentModels(records, selectedAppointments));
   }
+
+  const addSubject = () => {
+    setSelectedAppointments(selectedValues.match(/\d+/gi)!.map(Number));
+  };
+  useEffect(() => {
+    setData(makeAppointmentModels(records, selectedAppointments));
+  }, [selectedAppointments]);
 
   return (
     <Fragment>
       <Paper>
-        {/* <button onClick={handleOpen}>Open modal</button> */}
+        <input
+          type="text"
+          style={{ width: 900 }}
+          value={selectedValues}
+          onChange={(e) => {
+            setSelectedValue(e.currentTarget.value);
+          }}
+        />
+        <button onClick={addSubject}>Add schedule</button>
         <FormAppointment
           open={openAppointmentForm}
           close={closeAppointmentForm}
@@ -143,17 +167,6 @@ export default () => {
           }}
         >
           <div>
-            <label>Select Schedule: </label>
-            <select
-              value={sched}
-              // onChange={changeSched}
-              style={{ marginTop: 10 }}
-            >
-              <option value={"maleSched"}>Male Schedule</option>
-              <option value={"femaleSched"}>Female Schedule</option>
-            </select>
-          </div>
-          <div>
             <Button variant="contained" onClick={handleOpenAppointmentForm}>
               <AddIcon />
             </Button>
@@ -170,7 +183,6 @@ export default () => {
           <AppointmentTooltip
             showOpenButton
             showDeleteButton={true}
-            // commandButtonComponent={CommandButton}
             layoutComponent={LayoutComponent}
           />
           <Resources data={resources} mainResourceName="colorId" />
