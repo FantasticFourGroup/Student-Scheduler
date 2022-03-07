@@ -1,29 +1,32 @@
-import { pink, purple, teal, amber, deepOrange } from "@mui/material/colors";
-
 export const resourcesData = [
 	{
 		text: "Amber",
 		id: 1,
-		color: amber,
+		color: "gold",
 	},
 	{
 		text: "Pink",
 		id: 2,
-		color: pink,
+		color: "pink",
 	},
 	{
 		text: "Purple",
 		id: 3,
-		color: purple,
+		color: "purple",
 	},
 	{
 		text: "Orange",
 		id: 4,
-		color: deepOrange,
+		color: "orange",
 	},
 	{
 		text: "Teal",
 		id: 5,
-		color: teal,
+		color: "teal",
+	},
+	{
+		text: "Red",
+		id: 6,
+		color: "red",
 	},
 ];

@@ -8,12 +8,15 @@ export function inRange(start?: Number, end?: Number, num?: Number) {
     return false;
 }
 
-export default function hasNoOverlaps(appointment: AppointmentModel, appointmentList: [AppointmentModel]) {
-    const appStart = appointment.startDate ?
-        new Date(appointment.startDate).getTime()
+export default function hasNoOverlaps(
+    appointment: AppointmentModel,
+    appointmentList: [AppointmentModel]
+) {
+    const appStart = appointment.startDate
+        ? new Date(appointment.startDate).getTime()
         : undefined;
-    const appEnd = appointment.startDate ?
-        new Date(appointment.endDate).getTime()
+    const appEnd = appointment.startDate
+        ? new Date(appointment.endDate).getTime()
         : undefined;
 
     const found = appointmentList.find((item) => {
@@ -23,13 +26,22 @@ export default function hasNoOverlaps(appointment: AppointmentModel, appointment
         if (itemStart === appStart && itemEnd === appEnd) {
             return true;
         } else if (item.id != appointment.id) {
-            return inRange(itemStart, itemEnd, appStart) ||
+            if (
+                inRange(itemStart, itemEnd, appStart) ||
                 inRange(itemStart, itemEnd, appEnd) ||
                 inRange(appStart, appEnd, itemStart) ||
-                inRange(appStart, appEnd, itemEnd);
+                inRange(appStart, appEnd, itemEnd)
+            ) {
+                console.log(itemStart, itemEnd, appStart, appEnd, item);
+            }
+            return (
+                inRange(itemStart, itemEnd, appStart) ||
+                inRange(itemStart, itemEnd, appEnd) ||
+                inRange(appStart, appEnd, itemStart) ||
+                inRange(appStart, appEnd, itemEnd)
+            );
         }
         return false;
-    }
-    )
+    });
     return found ? false : true;
 }
