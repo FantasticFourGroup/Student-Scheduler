@@ -1,9 +1,4 @@
-/* eslint-disable react/jsx-no-bind */
-/* eslint-disable react/button-has-type */
-/* eslint-disable object-curly-newline */
-/* eslint-disable jsx-a11y/label-has-associated-control */
-/* eslint-disable react/jsx-props-no-spreading */
-// @ts-nocheck
+
 import React, { useState, useCallback, useEffect } from "react";
 import Paper from "@mui/material/Paper";
 import {
@@ -28,9 +23,9 @@ import { appointmentsRecords } from "../demo-data/appointment_record";
 
 import FormAppointment from "./FormAppointment";
 
-import { toDate } from "./utils/timeFormat";
+import { toDate, getTimeFormat } from "./utils/timeFormat";
 
-import { AppointmentModel, RecordsModel } from "./Models";
+import { AppointmentModel, AppointmentRecord, RecordsModel } from "./Models";
 
 const currentDate = "2018-06-27";
 
@@ -76,9 +71,7 @@ export default function App() {
   const onCommitChanges = useCallback(
     ({ added, changed, deleted }) => {
       if (deleted) {
-        setData(
-          data.filter((appointment) => Math.trunc(appointment.id) !== deleted),
-        );
+        setSelectedAppointments(selectedAppointments.filter((values) => values !== Math.floor(deleted)))
       } else {
         const toCheck = added ?? {
           ...(Object.values(changed)[0] as AppointmentModel),
@@ -86,20 +79,32 @@ export default function App() {
         };
 
         if (hasNoOverlaps(toCheck, data)) {
-          if (added) {
-            const startingAddedId =
-              data.length > 0 ? data[data.length - 1].id + 1 : 0;
-            setData([...data, { id: startingAddedId, ...added }]);
-          }
           if (changed) {
-            setData(
-              data.map((appointment) => {
-                if (changed[appointment.id]) {
-                  return { ...appointment, ...changed[appointment.id] };
+            const key = Object.keys(changed)[0]
+            const mainId = Math.floor(Number(key))
+      
+
+           
+
+            function makeModifiedRecord(previous: AppointmentRecord, current: AppointmentModel) {
+              const newRecord =  { ...previous, start: getTimeFormat(current.startDate), end: getTimeFormat(current.endDate), days: [current.startDate.getDay().toString()] }
+
+            if(previous.days.length > 1) {
+                 const intactDays =  previous.days.filter((day,i)=> {
+                  if (i !== Number(key.split('.')[1])) {
+                   return day
+                  }
+                })
+                return {...newRecord, days: [ ...intactDays, ...newRecord.days]}
                 }
-                return appointment;
-              }),
-            );
+                  return newRecord
+                
+              }
+              setRecords({ ...records, [mainId]: makeModifiedRecord(appointmentsRecords[mainId], changed[key])})
+              // console.log(makeAppointmentModels({1: makeModifiedRecord(appointmentsRecords[mainId], changed[key])}, [1]))
+              // const conflict = makeAppointmentModels({1: makeModifiedRecord(appointmentsRecords[mainId], changed[key])}, [1]).filter((item) => !hasNoOverlaps(item, data) ) 
+              // console.log(conflict)
+              
           }
         } else {
           // eslint-disable-next-line no-alert
@@ -116,7 +121,7 @@ export default function App() {
         {...restProps}
         onOpenButtonClick={() => {
           setOpenAppoinmentForm(true);
-          setEditAppointment(restProps.appointmentMeta.data.id);
+          setEditAppointment(Math.floor(restProps.appointmentMeta.data.id));
         }}
       />
     ),
@@ -159,7 +164,7 @@ export default function App() {
 
     setData(newAppointments);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedAppointments]);
+  }, [selectedAppointments, records]);
 
   return (
     <Paper>
