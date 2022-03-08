@@ -26,14 +26,6 @@ export default function hasNoOverlaps(
         if (itemStart === appStart && itemEnd === appEnd) {
             return true;
         } else if (item.id != appointment.id) {
-            if (
-                inRange(itemStart, itemEnd, appStart) ||
-                inRange(itemStart, itemEnd, appEnd) ||
-                inRange(appStart, appEnd, itemStart) ||
-                inRange(appStart, appEnd, itemEnd)
-            ) {
-                console.log(itemStart, itemEnd, appStart, appEnd, item);
-            }
             return (
                 inRange(itemStart, itemEnd, appStart) ||
                 inRange(itemStart, itemEnd, appEnd) ||
