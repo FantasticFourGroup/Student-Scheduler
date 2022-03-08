@@ -1,10 +1,12 @@
-import { appointmentsMale , appointmentsFemale } from "../../demo-data/appointments";
+// import { appointmentsMale , appointmentsFemale } from "../../demo-data/appointments";
 
-export default function overlap(dateRanges: Array< 
-  {title: string,
-  startDate: Date,
-  endDate: Date,
-  id: number}>) {
+export default function overlap(dateRanges: Array<
+  {
+    title: string,
+    startDate: Date,
+    endDate: Date,
+    id: number
+  }>) {
 
   var sortedRanges = dateRanges.sort((previous, current) => {
     // get the start date from previous and current
@@ -41,26 +43,32 @@ export default function overlap(dateRanges: Array<
 
       // seed the reduce
     },
-    { overlap: false, 
-      ranges: 
-      Array<{
-        date1: {title: string,
-          startDate: Date,
-          endDate: Date,
-          id: number}, 
-        date2: {title: string,
-          startDate: Date,
-          endDate: Date,
-          id: number}
-      }>()}
-    );
+    {
+      overlap: false,
+      ranges:
+        Array<{
+          date1: {
+            title: string,
+            startDate: Date,
+            endDate: Date,
+            id: number
+          },
+          date2: {
+            title: string,
+            startDate: Date,
+            endDate: Date,
+            id: number
+          }
+        }>()
+    }
+  );
 
   // return the final results
   return result;
 }
 
 
-const outputMale = JSON.stringify(overlap(appointmentsMale), null, 2);
-console.log("Checking conflicts: ", outputMale);
-const outputFemale = JSON.stringify(overlap(appointmentsFemale), null, 2);
-console.log("Checking conflicts: ", outputFemale);
+// const outputMale = JSON.stringify(overlap(appointmentsMale), null, 2);
+// console.log("Checking conflicts: ", outputMale);
+// const outputFemale = JSON.stringify(overlap(appointmentsFemale), null, 2);
+// console.log("Checking conflicts: ", outputFemale);
