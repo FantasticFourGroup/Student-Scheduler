@@ -1,3 +1,6 @@
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/require-default-props */
 import React from "react";
 
 import {
@@ -21,7 +24,7 @@ interface ColorModel {
   color: string;
 }
 
-const ColorSelector = ({ value, onChange, colors }: ColorSelectorProps) => {
+function ColorSelector({ value, onChange, colors }: ColorSelectorProps) {
   const menuItem = colors.map((color) => (
     <MenuItem value={color.id} key={color.id}>
       <Brightness1 style={{ color: color.color }} />
@@ -41,6 +44,6 @@ const ColorSelector = ({ value, onChange, colors }: ColorSelectorProps) => {
       </Select>
     </FormControl>
   );
-};
+}
 
 export default ColorSelector;

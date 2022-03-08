@@ -1,4 +1,10 @@
-import React, { useState, useCallback, Fragment, useEffect } from "react";
+/* eslint-disable react/jsx-no-bind */
+/* eslint-disable react/button-has-type */
+/* eslint-disable object-curly-newline */
+/* eslint-disable jsx-a11y/label-has-associated-control */
+/* eslint-disable react/jsx-props-no-spreading */
+// @ts-nocheck
+import React, { useState, useCallback, useEffect } from "react";
 import Paper from "@mui/material/Paper";
 import {
   ViewState,
@@ -14,13 +20,13 @@ import {
   Resources,
 } from "@devexpress/dx-react-scheduler-material-ui";
 
+import { Button } from "@mui/material";
 import { resourcesData } from "../demo-data/resources";
 
 import hasNoOverlaps from "./utils/overlapChecker";
 import { appointmentsRecords } from "../demo-data/appointment_record";
 
 import FormAppointment from "./FormAppointment";
-import { Button } from "@mui/material";
 
 import { toDate } from "./utils/timeFormat";
 
@@ -40,30 +46,28 @@ const sample = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 
 function makeAppointmentModels(
   records: RecordsModel,
-  selectedItem: number[]
+  selectedItem: number[],
 ): AppointmentModel[] {
   return selectedItem.flatMap((item: number) => {
     const { title, stubCode, start, end, days, id, colorId } = records[item];
-    return days.flatMap((day: string, i: number) => {
-      return {
-        title: (days.length > 1 ? "🔂 " : "") + title + " " + stubCode,
-        startDate: toDate(day, start),
-        endDate: toDate(day, end),
-        id: Number(`${id}.${i}`),
-        colorId,
-      };
-    });
+    return days.flatMap((day: string, i: number) => ({
+      title: `${(days.length > 1 ? "🔂 " : "") + title} ${stubCode}`,
+      startDate: toDate(day, start),
+      endDate: toDate(day, end),
+      id: Number(`${id}.${i}`),
+      colorId,
+    }));
   });
 }
 
-export default () => {
+export default function App() {
   const [records, setRecords] = useState(appointmentsRecords);
   const [selectedAppointments, setSelectedAppointments] = useState(sample);
   const [selectedValues, setSelectedValue] = useState(
-    selectedAppointments.join(", ")
+    selectedAppointments.join(", "),
   );
   const [data, setData] = useState(
-    makeAppointmentModels(records, selectedAppointments)
+    makeAppointmentModels(records, selectedAppointments),
   );
 
   const [openAppointmentForm, setOpenAppoinmentForm] = useState(false);
@@ -73,7 +77,7 @@ export default () => {
     ({ added, changed, deleted }) => {
       if (deleted) {
         setData(
-          data.filter((appointment) => Math.trunc(appointment.id) !== deleted)
+          data.filter((appointment) => Math.trunc(appointment.id) !== deleted),
         );
       } else {
         const toCheck = added ?? {
@@ -89,23 +93,25 @@ export default () => {
           }
           if (changed) {
             setData(
-              data.map((appointment) =>
-                changed[appointment.id]
-                  ? { ...appointment, ...changed[appointment.id] }
-                  : appointment
-              )
+              data.map((appointment) => {
+                if (changed[appointment.id]) {
+                  return { ...appointment, ...changed[appointment.id] };
+                }
+                return appointment;
+              }),
             );
           }
         } else {
+          // eslint-disable-next-line no-alert
           alert("You have overlapping Schedule"); // ALERTT
         }
       }
     },
-    [setData, data]
+    [setData, data],
   );
 
-  const LayoutComponent = useCallback(({ ...restProps }) => {
-    return (
+  const LayoutComponent = useCallback(
+    ({ ...restProps }) => (
       <AppointmentTooltip.Layout
         {...restProps}
         onOpenButtonClick={() => {
@@ -113,8 +119,9 @@ export default () => {
           setEditAppointment(restProps.appointmentMeta.data.id);
         }}
       />
-    );
-  }, []);
+    ),
+    [],
+  );
 
   function handleOpenAppointmentForm() {
     setOpenAppoinmentForm(true);
@@ -125,6 +132,7 @@ export default () => {
     setOpenAppoinmentForm(false);
   }
 
+  // eslint-disable-next-line no-shadow
   function handleSubmit(records: RecordsModel) {
     setRecords(records);
     // setData(makeAppointmentModels(records, selectedAppointments));
@@ -137,11 +145,12 @@ export default () => {
   useEffect(() => {
     const newAppointments = makeAppointmentModels(
       records,
-      selectedAppointments
+      selectedAppointments,
     ).reduce((previous, current, i) => {
       if (i < 1) {
         return [current];
-      } else if (hasNoOverlaps(current, previous)) {
+      }
+      if (hasNoOverlaps(current, previous)) {
         return [...previous, current];
       }
       alert(`Overlaps on: ${current.title}`);
@@ -149,60 +158,59 @@ export default () => {
     }, data);
 
     setData(newAppointments);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAppointments]);
 
   return (
-    <Fragment>
-      <Paper>
-        <input
-          type="text"
-          style={{ width: 900 }}
-          value={selectedValues}
-          onChange={(e) => {
-            setSelectedValue(e.currentTarget.value);
-          }}
-        />
-        <button onClick={addSubject}>Add schedule</button>
-        <FormAppointment
-          open={openAppointmentForm}
-          close={closeAppointmentForm}
-          appointmentId={editAppointment}
-          records={records}
-          onSubmit={handleSubmit}
-        ></FormAppointment>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            paddingLeft: "2%",
-            paddingRight: "2%",
-            paddingTop: "1%",
-            paddingBottom: "1%",
-          }}
-        >
-          <div>
-            <Button variant="contained" onClick={handleOpenAppointmentForm}>
-              Create Course Schedule
-            </Button>
-          </div>
+    <Paper>
+      <input
+        type="text"
+        style={{ width: 900 }}
+        value={selectedValues}
+        onChange={(e) => {
+          setSelectedValue(e.currentTarget.value);
+        }}
+      />
+      <button onClick={addSubject}>Add schedule</button>
+      <FormAppointment
+        open={openAppointmentForm}
+        close={closeAppointmentForm}
+        appointmentId={editAppointment}
+        records={records}
+        onSubmit={handleSubmit}
+      />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          paddingLeft: "2%",
+          paddingRight: "2%",
+          paddingTop: "1%",
+          paddingBottom: "1%",
+        }}
+      >
+        <div>
+          <Button variant="contained" onClick={handleOpenAppointmentForm}>
+            Create Course Schedule
+          </Button>
         </div>
-        <Scheduler data={data} height={600}>
-          <ViewState currentDate={currentDate} />
-          <EditingState onCommitChanges={onCommitChanges} />
+      </div>
+      <Scheduler data={data} height={600}>
+        <ViewState currentDate={currentDate} />
+        <EditingState onCommitChanges={onCommitChanges} />
 
-          <IntegratedEditing />
-          <WeekView startDayHour={6} endDayHour={24} />
+        <IntegratedEditing />
+        <WeekView startDayHour={6} endDayHour={24} />
 
-          <Appointments />
-          <AppointmentTooltip
-            showOpenButton
-            showDeleteButton={true}
-            layoutComponent={LayoutComponent}
-          />
-          <Resources data={resources} mainResourceName="colorId" />
-          <DragDropProvider allowDrag={() => true} allowResize={() => true} />
-        </Scheduler>
-      </Paper>
-    </Fragment>
+        <Appointments />
+        <AppointmentTooltip
+          showOpenButton
+          showDeleteButton
+          layoutComponent={LayoutComponent}
+        />
+        <Resources data={resources} mainResourceName="colorId" />
+        <DragDropProvider allowDrag={() => true} allowResize={() => true} />
+      </Scheduler>
+    </Paper>
   );
-};
+}
