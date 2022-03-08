@@ -45,16 +45,16 @@ test("hasNoOverlaps", () => {
         id: 3,
         startDate: new Date(2018, 5, 26, 7, 0),
         endDate: new Date(2018, 5, 26, 11, 0),
-    }, dummyData as [AppointmentModel])).toBe(true);
+    }, dummyData as AppointmentModel[])).toBe(true);
     expect(hasNoOverlaps({
         id: 6,
         startDate: new Date(2018, 5, 26, 7, 0),
         endDate: new Date(2018, 5, 26, 11, 0),
-    }, dummyData as [AppointmentModel])).toBe(false);
+    }, dummyData as AppointmentModel[])).toBe(false);
     expect(hasNoOverlaps({
         id: 6,
         startDate: new Date(2018, 5, 26, 6, 0),
         endDate: new Date(2018, 5, 26, 7, 0),
-    }, dummyData as [AppointmentModel])).toBe(true);
+    }, dummyData as AppointmentModel[])).toBe(true);
 });
 
