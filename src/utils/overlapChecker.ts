@@ -10,7 +10,7 @@ export function inRange(start?: Number, end?: Number, num?: Number) {
 
 export default function hasNoOverlaps(
   appointment: AppointmentModel,
-  appointmentList: [AppointmentModel],
+  appointmentList: AppointmentModel[],
 ) {
   const appStart = appointment.startDate
     ? new Date(appointment.startDate).getTime()

@@ -1,7 +1,10 @@
+/* eslint-disable react/jsx-no-bind */
+/* eslint-disable react/button-has-type */
+/* eslint-disable object-curly-newline */
 /* eslint-disable jsx-a11y/label-has-associated-control */
 /* eslint-disable react/jsx-props-no-spreading */
 // @ts-nocheck
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import Paper from "@mui/material/Paper";
 import {
   ViewState,
@@ -12,39 +15,24 @@ import {
   Scheduler,
   WeekView,
   Appointments,
-  AppointmentForm,
   AppointmentTooltip,
   DragDropProvider,
   Resources,
 } from "@devexpress/dx-react-scheduler-material-ui";
 
-import {
-  appointmentsMale,
-  appointmentsFemale,
-} from "../demo-data/appointments";
-
+import { Button } from "@mui/material";
 import { resourcesData } from "../demo-data/resources";
-import { OptionProps } from "./types";
 
 import hasNoOverlaps from "./utils/overlapChecker";
+import { appointmentsRecords } from "../demo-data/appointment_record";
 
-const PREFIX = "Demo";
-// #FOLD_BLOCK
-export const classes = {
-  container: `${PREFIX}-container`,
-  text: `${PREFIX}-text`,
-  formControlLabel: `${PREFIX}-formControlLabel`,
-};
-// #FOLD_BLOCK
+import FormAppointment from "./FormAppointment";
+
+import { toDate } from "./utils/timeFormat";
+
+import { AppointmentModel, RecordsModel } from "./Models";
 
 const currentDate = "2018-06-27";
-const options: OptionProps = {
-  allowAdding: true,
-  allowDeleting: true,
-  allowUpdating: true,
-  allowDragging: true,
-  allowResizing: true,
-};
 
 const resources = [
   {
@@ -54,42 +42,45 @@ const resources = [
   },
 ];
 
+const sample = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+
+function makeAppointmentModels(
+  records: RecordsModel,
+  selectedItem: number[],
+): AppointmentModel[] {
+  return selectedItem.flatMap((item: number) => {
+    const { title, stubCode, start, end, days, id, colorId } = records[item];
+    return days.flatMap((day: string) => ({
+      title: `${(days.length > 1 ? "🔂 " : "") + title} ${stubCode}`,
+      startDate: toDate(day, start),
+      endDate: toDate(day, end),
+      id,
+      colorId,
+    }));
+  });
+}
+
 export default function App() {
-  const [data, setData] = useState(appointmentsMale);
-  const [editingOptions] = useState<OptionProps>(options);
-  const [addedAppointment, setAddedAppointment] = useState({});
+  const [records, setRecords] = useState(appointmentsRecords);
+  const [selectedAppointments, setSelectedAppointments] = useState(sample);
+  const [selectedValues, setSelectedValue] = useState(
+    selectedAppointments.join(", "),
+  );
+  const [data, setData] = useState(
+    makeAppointmentModels(records, selectedAppointments),
+  );
 
-  const [isAppointmentBeingCreated, setIsAppointmentBeingCreated] =
-    useState(false); // tobe Removed
+  const [openAppointmentForm, setOpenAppoinmentForm] = useState(false);
+  const [editAppointment, setEditAppointment] = useState(0);
 
-  const [sched, setSched] = useState("maleSched");
-
-  function changeSched() {
-    if (sched === "maleSched") {
-      setData(appointmentsFemale);
-      setSched("femaleSched");
-    } else {
-      setData(appointmentsMale);
-      setSched("maleSched");
-    }
-  }
-
-  const {
-    allowAdding,
-    allowDeleting,
-    allowUpdating,
-    allowResizing,
-    allowDragging,
-  } = editingOptions;
-
-  const onCommitChanges = React.useCallback(
+  const onCommitChanges = useCallback(
     ({ added, changed, deleted }) => {
       if (deleted) {
         setData(data.filter((appointment) => appointment.id !== deleted));
-        setIsAppointmentBeingCreated(false); // tobe Removed
       } else {
+        console.log(changed, "jhiuwyaguyegweiuiquwqwiuhgeiuqhewiuqwheiuhq");
         const toCheck = added ?? {
-          ...Object.values(changed)[0],
+          ...(Object.values(changed)[0] as AppointmentModel),
           id: Object.keys(changed)[0],
         };
 
@@ -109,86 +100,100 @@ export default function App() {
               }),
             );
           }
-          setIsAppointmentBeingCreated(false); // tobeRemoved
         } else {
           // eslint-disable-next-line no-alert
           alert("You have overlapping Schedule"); // ALERTT
         }
       }
     },
-    [setData, setIsAppointmentBeingCreated, data],
+    [setData, data],
   );
-  const onAddedAppointmentChange = React.useCallback((appointment) => {
-    setAddedAppointment(appointment);
-    setIsAppointmentBeingCreated(true); // tobe Removed
-  }, []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const TimeTableCell = React.useCallback(
-    React.memo(({ onDoubleClick, ...restProps }) => (
-      <WeekView.TimeTableCell
+  const LayoutComponent = useCallback(
+    ({ ...restProps }) => (
+      <AppointmentTooltip.Layout
         {...restProps}
-        onDoubleClick={allowAdding ? onDoubleClick : undefined}
+        onOpenButtonClick={() => {
+          setOpenAppoinmentForm(true);
+          setEditAppointment(restProps.appointmentMeta.data.id);
+        }}
       />
-    )),
-    [allowAdding],
+    ),
+    [],
   );
 
-  const CommandButton = React.useCallback(
-    ({ id, ...restProps }) => {
-      if (id === "deleteButton") {
-        return (
-          <AppointmentForm.CommandButton
-            id={id}
-            {...restProps}
-            disabled={!allowDeleting}
-          />
-        );
-      }
-      return <AppointmentForm.CommandButton id={id} {...restProps} />;
-    },
-    [allowDeleting],
-  );
+  function handleOpenAppointmentForm() {
+    setOpenAppoinmentForm(true);
+  }
 
-  const allowDrag = useCallback(
-    () => allowDragging && allowUpdating,
-    [allowDragging, allowUpdating],
-  );
-  const allowResize = useCallback(
-    () => allowResizing && allowUpdating,
-    [allowResizing, allowUpdating],
-  );
+  function closeAppointmentForm() {
+    setEditAppointment(0);
+    setOpenAppoinmentForm(false);
+  }
+
+  // eslint-disable-next-line no-shadow
+  function handleSubmit(records: RecordsModel) {
+    setRecords(records);
+    setData(makeAppointmentModels(records, selectedAppointments));
+  }
+
+  const addSubject = () => {
+    setSelectedAppointments(selectedValues.match(/\d+/gi)!.map(Number));
+  };
+  useEffect(() => {
+    setData(makeAppointmentModels(records, selectedAppointments));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAppointments]);
 
   return (
     <Paper>
-      <label>Select Schedule: </label>
-      <select value={sched} onChange={changeSched} style={{ marginTop: 10 }}>
-        <option value="maleSched">Male Schedule</option>
-        <option value="femaleSched">Female Schedule</option>
-      </select>
+      <input
+        type="text"
+        style={{ width: 900 }}
+        value={selectedValues}
+        onChange={(e) => {
+          setSelectedValue(e.currentTarget.value);
+        }}
+      />
+      <button onClick={addSubject}>Add schedule</button>
+      <FormAppointment
+        open={openAppointmentForm}
+        close={closeAppointmentForm}
+        appointmentId={editAppointment}
+        records={records}
+        onSubmit={handleSubmit}
+      />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          paddingLeft: "2%",
+          paddingRight: "2%",
+          paddingTop: "1%",
+          paddingBottom: "1%",
+        }}
+      >
+        <div>
+          <Button variant="contained" onClick={handleOpenAppointmentForm}>
+            Create Course Schedule
+          </Button>
+        </div>
+      </div>
       <Scheduler data={data} height={600}>
         <ViewState currentDate={currentDate} />
-        <EditingState
-          onCommitChanges={onCommitChanges}
-          addedAppointment={addedAppointment}
-          onAddedAppointmentChange={onAddedAppointmentChange}
-        />
+        <EditingState onCommitChanges={onCommitChanges} />
 
         <IntegratedEditing />
-        <WeekView
-          startDayHour={6}
-          endDayHour={24}
-          timeTableCellComponent={TimeTableCell}
-        />
+        <WeekView startDayHour={6} endDayHour={24} />
 
         <Appointments />
-        <AppointmentTooltip showOpenButton showDeleteButton={allowDeleting} />
-        <Resources data={resources} mainResourceName="colorId" />
-        <AppointmentForm
-          commandButtonComponent={CommandButton}
-          readOnly={isAppointmentBeingCreated ? false : !allowUpdating} // tobe Removed
+        <AppointmentTooltip
+          showOpenButton
+          showDeleteButton
+          layoutComponent={LayoutComponent}
         />
-        <DragDropProvider allowDrag={allowDrag} allowResize={allowResize} />
+        <Resources data={resources} mainResourceName="colorId" />
+        <DragDropProvider allowDrag={() => true} allowResize={() => true} />
       </Scheduler>
     </Paper>
   );
