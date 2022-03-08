@@ -21,7 +21,6 @@ import { appointmentsRecords } from "../demo-data/appointment_record";
 
 import FormAppointment from "./FormAppointment";
 import { Button } from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
 
 import { toDate } from "./utils/timeFormat";
 
@@ -45,12 +44,12 @@ function makeAppointmentModels(
 ): AppointmentModel[] {
   return selectedItem.flatMap((item: number) => {
     const { title, stubCode, start, end, days, id, colorId } = records[item];
-    return days.flatMap((day: string) => {
+    return days.flatMap((day: string, i: number) => {
       return {
         title: (days.length > 1 ? "🔂 " : "") + title + " " + stubCode,
         startDate: toDate(day, start),
         endDate: toDate(day, end),
-        id,
+        id: Number(`${id}.${i}`),
         colorId,
       };
     });
@@ -73,9 +72,10 @@ export default () => {
   const onCommitChanges = useCallback(
     ({ added, changed, deleted }) => {
       if (deleted) {
-        setData(data.filter((appointment) => appointment.id !== deleted));
+        setData(
+          data.filter((appointment) => Math.trunc(appointment.id) !== deleted)
+        );
       } else {
-        console.log(changed, "jhiuwyaguyegweiuiquwqwiuhgeiuqhewiuqwheiuhq");
         const toCheck = added ?? {
           ...(Object.values(changed)[0] as AppointmentModel),
           id: Object.keys(changed)[0],
@@ -127,14 +127,28 @@ export default () => {
 
   function handleSubmit(records: RecordsModel) {
     setRecords(records);
-    setData(makeAppointmentModels(records, selectedAppointments));
+    // setData(makeAppointmentModels(records, selectedAppointments));
   }
 
   const addSubject = () => {
     setSelectedAppointments(selectedValues.match(/\d+/gi)!.map(Number));
   };
+
   useEffect(() => {
-    setData(makeAppointmentModels(records, selectedAppointments));
+    const newAppointments = makeAppointmentModels(
+      records,
+      selectedAppointments
+    ).reduce((previous, current, i) => {
+      if (i < 1) {
+        return [current];
+      } else if (hasNoOverlaps(current, previous)) {
+        return [...previous, current];
+      }
+      alert(`Overlaps on: ${current.title}`);
+      return previous;
+    }, data);
+
+    setData(newAppointments);
   }, [selectedAppointments]);
 
   return (
