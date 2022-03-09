@@ -22,18 +22,16 @@ import {
   DragDropProvider,
   Resources,
 } from "@devexpress/dx-react-scheduler-material-ui";
+import { ref, set, onValue } from "firebase/database";
 
 import { Button } from "@mui/material";
 import { resourcesData } from "../demo-data/resources";
-
 import hasNoOverlaps from "./utils/overlapChecker";
-import { appointmentsRecords } from "../demo-data/appointment_record";
-
+import { emptyAppointmentRecords } from "../demo-data/appointment_record";
 import FormAppointment from "./FormAppointment";
-
 import { toDate, getTimeFormat } from "./utils/timeFormat";
-
 import { AppointmentModel, AppointmentRecord, RecordsModel } from "./Models";
+import database from "./utils/firebase";
 
 const currentDate = "2018-06-27";
 
@@ -51,6 +49,9 @@ function makeAppointmentModels(
   records: RecordsModel,
   selectedItem: number[],
 ): AppointmentModel[] {
+  if (Object.keys(records).length === 0) {
+    return [];
+  }
   return selectedItem.flatMap((item: number) => {
     const { title, stubCode, start, end, days, id, colorId } = records[item];
     return days.flatMap((day: string, i: number) => ({
@@ -64,7 +65,7 @@ function makeAppointmentModels(
 }
 
 export default function App() {
-  const [records, setRecords] = useState(appointmentsRecords);
+  const [records, setRecords] = useState(emptyAppointmentRecords);
   const [selectedAppointments, setSelectedAppointments] = useState(sample);
   const [selectedValues, setSelectedValue] = useState(
     selectedAppointments.join(", "),
@@ -75,6 +76,17 @@ export default function App() {
 
   const [openAppointmentForm, setOpenAppoinmentForm] = useState(false);
   const [editAppointment, setEditAppointment] = useState(0);
+
+  useEffect(() => {
+    const appointmentsRef = ref(database, "appointments");
+    onValue(appointmentsRef, (snapshot) => {
+      if (!snapshot.exists()) {
+        return;
+      }
+      const appointments = snapshot.val();
+      setRecords(appointments);
+    });
+  }, []);
 
   const onCommitChanges = useCallback(
     ({ added, changed, deleted }) => {
@@ -123,6 +135,11 @@ export default function App() {
               }
               return newRecord;
             }
+
+            set(ref(database, "appointments"), {
+              ...records,
+              [mainId]: makeModifiedRecord(records[mainId], changed[key]),
+            });
 
             setRecords({
               ...records,
@@ -186,6 +203,7 @@ export default function App() {
   // eslint-disable-next-line no-shadow
   function handleSubmit(records: RecordsModel) {
     setRecords(records);
+    set(ref(database, "appointments"), records);
     // setData(makeAppointmentModels(records, selectedAppointments));
   }
 
