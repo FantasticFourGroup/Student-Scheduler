@@ -22,7 +22,7 @@ import {
   DragDropProvider,
   Resources,
 } from "@devexpress/dx-react-scheduler-material-ui";
-import { ref, onValue } from "firebase/database";
+import { ref, set, onValue } from "firebase/database";
 
 import { Button } from "@mui/material";
 import { resourcesData } from "../demo-data/resources";
@@ -80,6 +80,9 @@ export default function App() {
   useEffect(() => {
     const appointmentsRef = ref(database, "appointments");
     onValue(appointmentsRef, (snapshot) => {
+      if (!snapshot.exists()) {
+        return;
+      }
       const appointments = snapshot.val();
       setRecords(appointments);
     });
@@ -132,6 +135,11 @@ export default function App() {
               }
               return newRecord;
             }
+
+            set(ref(database, "appointments"), {
+              ...records,
+              [mainId]: makeModifiedRecord(records[mainId], changed[key]),
+            });
 
             setRecords({
               ...records,
@@ -195,6 +203,7 @@ export default function App() {
   // eslint-disable-next-line no-shadow
   function handleSubmit(records: RecordsModel) {
     setRecords(records);
+    set(ref(database, "appointments"), records);
     // setData(makeAppointmentModels(records, selectedAppointments));
   }
 
