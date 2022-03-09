@@ -1,7 +1,13 @@
-/* eslint-disable jsx-a11y/label-has-associated-control */
-/* eslint-disable react/jsx-props-no-spreading */
-// @ts-nocheck
-import React, { useState, useCallback } from "react";
+/* eslint-disable
+consistent-return,
+array-callback-return,
+object-curly-newline,
+react/jsx-no-bind,
+react/button-has-type,
+no-alert,
+no-inner-declarations,
+react/jsx-props-no-spreading */
+import React, { useState, useCallback, useEffect } from "react";
 import Paper from "@mui/material/Paper";
 import {
   ViewState,
@@ -12,39 +18,27 @@ import {
   Scheduler,
   WeekView,
   Appointments,
-  AppointmentForm,
   AppointmentTooltip,
   DragDropProvider,
   Resources,
 } from "@devexpress/dx-react-scheduler-material-ui";
+import { ref, set, onValue } from "firebase/database";
 
-import {
-  appointmentsMale,
-  appointmentsFemale,
-} from "../demo-data/appointments";
-
+import { Button } from "@mui/material";
 import { resourcesData } from "../demo-data/resources";
-import { OptionProps } from "./types";
-
 import hasNoOverlaps from "./utils/overlapChecker";
-
-const PREFIX = "Demo";
-// #FOLD_BLOCK
-export const classes = {
-  container: `${PREFIX}-container`,
-  text: `${PREFIX}-text`,
-  formControlLabel: `${PREFIX}-formControlLabel`,
-};
-// #FOLD_BLOCK
+import { emptyAppointmentRecords } from "../demo-data/appointment_record";
+import FormAppointment from "./components/FormAppointment";
+import AlertSnackBar from "./components/AlertSnackBar";
+import { toDate, getTimeFormat } from "./utils/timeFormat";
+import {
+  AppointmentModel,
+  AppointmentRecord,
+  RecordsModel,
+} from "./types/Models";
+import database from "./utils/firebase";
 
 const currentDate = "2018-06-27";
-const options: OptionProps = {
-  allowAdding: true,
-  allowDeleting: true,
-  allowUpdating: true,
-  allowDragging: true,
-  allowResizing: true,
-};
 
 const resources = [
   {
@@ -54,141 +48,222 @@ const resources = [
   },
 ];
 
-export default function App() {
-  const [data, setData] = useState(appointmentsMale);
-  const [editingOptions] = useState<OptionProps>(options);
-  const [addedAppointment, setAddedAppointment] = useState({});
+const sample = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 
-  const [isAppointmentBeingCreated, setIsAppointmentBeingCreated] =
-    useState(false); // tobe Removed
-
-  const [sched, setSched] = useState("maleSched");
-
-  function changeSched() {
-    if (sched === "maleSched") {
-      setData(appointmentsFemale);
-      setSched("femaleSched");
-    } else {
-      setData(appointmentsMale);
-      setSched("maleSched");
-    }
+function makeAppointmentModels(
+  records: RecordsModel,
+  selectedItem: number[],
+): AppointmentModel[] {
+  if (Object.keys(records).length === 0) {
+    return [];
   }
+  return selectedItem.flatMap((item: number) => {
+    const { title, stubCode, start, end, days, id, colorId } = records[item];
+    return days.flatMap((day: string, i: number) => ({
+      title: `${(days.length > 1 ? "🔂 " : "") + title} ${stubCode}`,
+      startDate: toDate(day, start),
+      endDate: toDate(day, end),
+      id: Number(`${id}.${i}`),
+      colorId,
+    }));
+  });
+}
 
-  const {
-    allowAdding,
-    allowDeleting,
-    allowUpdating,
-    allowResizing,
-    allowDragging,
-  } = editingOptions;
+export default function App() {
+  const [records, setRecords] = useState(emptyAppointmentRecords);
+  const [selectedAppointments, setSelectedAppointments] = useState(sample);
+  const [selectedValues, setSelectedValue] = useState(
+    selectedAppointments.join(", "),
+  );
+  const [data, setData] = useState(
+    makeAppointmentModels(records, selectedAppointments),
+  );
 
-  const onCommitChanges = React.useCallback(
+  const [openAppointmentForm, setOpenAppoinmentForm] = useState(false);
+  const [editAppointment, setEditAppointment] = useState(0);
+  const [openSnackBar, setOpenSnackBar] = useState(false);
+
+  useEffect(() => {
+    const appointmentsRef = ref(database, "appointments");
+    onValue(appointmentsRef, (snapshot) => {
+      if (!snapshot.exists()) {
+        return;
+      }
+      const appointments = snapshot.val();
+      setRecords(appointments);
+    });
+  }, []);
+
+  const onCommitChanges = useCallback(
     ({ added, changed, deleted }) => {
       if (deleted) {
-        setData(data.filter((appointment) => appointment.id !== deleted));
-        setIsAppointmentBeingCreated(false); // tobe Removed
+        const selected = selectedAppointments.filter(
+          (values) => values !== Math.floor(deleted),
+        );
+        setSelectedAppointments(selected);
+        setSelectedValue(selected.join(", "));
       } else {
         const toCheck = added ?? {
-          ...Object.values(changed)[0],
+          ...(Object.values(changed)[0] as AppointmentModel),
           id: Object.keys(changed)[0],
         };
 
         if (hasNoOverlaps(toCheck, data)) {
-          if (added) {
-            const startingAddedId =
-              data.length > 0 ? data[data.length - 1].id + 1 : 0;
-            setData([...data, { id: startingAddedId, ...added }]);
-          }
           if (changed) {
-            setData(
-              data.map((appointment) => {
-                if (changed[appointment.id]) {
-                  return { ...appointment, ...changed[appointment.id] };
-                }
-                return appointment;
-              }),
-            );
+            const key = Object.keys(changed)[0];
+            const mainId = Math.floor(Number(key));
+
+            function makeModifiedRecord(
+              previous: AppointmentRecord,
+              current: AppointmentModel,
+            ) {
+              const newRecord = {
+                ...previous,
+                start: getTimeFormat(current.startDate),
+                end: getTimeFormat(current.endDate),
+                days: [current.startDate.getDay().toString()],
+              };
+
+              if (previous.days.length > 1) {
+                // eslint-disable-next-line array-callback-return
+                const intactDays = previous.days.filter((day, i) => {
+                  if (
+                    i !== Number(key.split(".")[1]) &&
+                    !(Number.isInteger(Number(key)) && i < 1)
+                  ) {
+                    return day;
+                  }
+                });
+                return {
+                  ...newRecord,
+                  days: [...intactDays, ...newRecord.days],
+                };
+              }
+              return newRecord;
+            }
+
+            set(ref(database, "appointments"), {
+              ...records,
+              [mainId]: makeModifiedRecord(records[mainId], changed[key]),
+            });
+
+            setRecords({
+              ...records,
+              [mainId]: makeModifiedRecord(records[mainId], changed[key]),
+            });
           }
-          setIsAppointmentBeingCreated(false); // tobeRemoved
         } else {
           // eslint-disable-next-line no-alert
-          alert("You have overlapping Schedule"); // ALERTT
+          setOpenSnackBar(true);
         }
       }
     },
-    [setData, setIsAppointmentBeingCreated, data],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [setData, data],
   );
-  const onAddedAppointmentChange = React.useCallback((appointment) => {
-    setAddedAppointment(appointment);
-    setIsAppointmentBeingCreated(true); // tobe Removed
-  }, []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const TimeTableCell = React.useCallback(
-    React.memo(({ onDoubleClick, ...restProps }) => (
-      <WeekView.TimeTableCell
+  const LayoutComponent = useCallback(
+    ({ ...restProps }) => (
+      <AppointmentTooltip.Layout
         {...restProps}
-        onDoubleClick={allowAdding ? onDoubleClick : undefined}
+        onOpenButtonClick={() => {
+          setOpenAppoinmentForm(true);
+          setEditAppointment(Math.floor(restProps.appointmentMeta.data.id));
+        }}
       />
-    )),
-    [allowAdding],
+    ),
+    [],
   );
 
-  const CommandButton = React.useCallback(
-    ({ id, ...restProps }) => {
-      if (id === "deleteButton") {
-        return (
-          <AppointmentForm.CommandButton
-            id={id}
-            {...restProps}
-            disabled={!allowDeleting}
-          />
-        );
+  function handleOpenAppointmentForm() {
+    setOpenAppoinmentForm(true);
+  }
+
+  function closeAppointmentForm() {
+    setEditAppointment(0);
+    setOpenAppoinmentForm(false);
+  }
+
+  // eslint-disable-next-line no-shadow
+  function handleSubmit(records: RecordsModel) {
+    setRecords(records);
+    set(ref(database, "appointments"), records);
+    // setData(makeAppointmentModels(records, selectedAppointments));
+  }
+
+  const addSubject = () => {
+    setSelectedAppointments(selectedValues.match(/\d+/gi)!.map(Number));
+  };
+
+  useEffect(() => {
+    const newAppointments = makeAppointmentModels(
+      records,
+      selectedAppointments,
+    ).reduce((previous, current, i) => {
+      if (i < 1) {
+        return [current];
       }
-      return <AppointmentForm.CommandButton id={id} {...restProps} />;
-    },
-    [allowDeleting],
-  );
-
-  const allowDrag = useCallback(
-    () => allowDragging && allowUpdating,
-    [allowDragging, allowUpdating],
-  );
-  const allowResize = useCallback(
-    () => allowResizing && allowUpdating,
-    [allowResizing, allowUpdating],
-  );
+      if (hasNoOverlaps(current, previous)) {
+        return [...previous, current];
+      }
+      // alert(`Overlaps on: ${current.title}`);
+      setOpenSnackBar(true);
+      return previous;
+    }, data);
+    setData(newAppointments);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedAppointments, records]);
 
   return (
     <Paper>
-      <label>Select Schedule: </label>
-      <select value={sched} onChange={changeSched} style={{ marginTop: 10 }}>
-        <option value="maleSched">Male Schedule</option>
-        <option value="femaleSched">Female Schedule</option>
-      </select>
+      <input
+        type="text"
+        style={{ width: 900 }}
+        value={selectedValues}
+        onChange={(e) => {
+          setSelectedValue(e.currentTarget.value);
+        }}
+      />
+      <button onClick={addSubject}>Add schedule</button>
+      <FormAppointment
+        open={openAppointmentForm}
+        close={closeAppointmentForm}
+        appointmentId={editAppointment}
+        records={records}
+        onSubmit={handleSubmit}
+      />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          paddingLeft: "2%",
+          paddingRight: "2%",
+          paddingTop: "1%",
+          paddingBottom: "1%",
+        }}
+      >
+        <div>
+          <Button variant="contained" onClick={handleOpenAppointmentForm}>
+            Create Course Schedule
+          </Button>
+        </div>
+      </div>
+      <AlertSnackBar open={openSnackBar} setOpen={setOpenSnackBar} />
       <Scheduler data={data} height={600}>
         <ViewState currentDate={currentDate} />
-        <EditingState
-          onCommitChanges={onCommitChanges}
-          addedAppointment={addedAppointment}
-          onAddedAppointmentChange={onAddedAppointmentChange}
-        />
+        <EditingState onCommitChanges={onCommitChanges} />
 
         <IntegratedEditing />
-        <WeekView
-          startDayHour={6}
-          endDayHour={24}
-          timeTableCellComponent={TimeTableCell}
-        />
+        <WeekView startDayHour={6} endDayHour={24} />
 
         <Appointments />
-        <AppointmentTooltip showOpenButton showDeleteButton={allowDeleting} />
-        <Resources data={resources} mainResourceName="colorId" />
-        <AppointmentForm
-          commandButtonComponent={CommandButton}
-          readOnly={isAppointmentBeingCreated ? false : !allowUpdating} // tobe Removed
+        <AppointmentTooltip
+          showOpenButton
+          showDeleteButton
+          layoutComponent={LayoutComponent}
         />
-        <DragDropProvider allowDrag={allowDrag} allowResize={allowResize} />
+        <Resources data={resources} mainResourceName="colorId" />
+        <DragDropProvider allowDrag={() => true} allowResize={() => true} />
       </Scheduler>
     </Paper>
   );
