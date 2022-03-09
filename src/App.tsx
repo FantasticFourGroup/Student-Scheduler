@@ -82,29 +82,28 @@ export default function App() {
           if (changed) {
             const key = Object.keys(changed)[0]
             const mainId = Math.floor(Number(key))
-      
-
-           
-
+  
             function makeModifiedRecord(previous: AppointmentRecord, current: AppointmentModel) {
-              const newRecord =  { ...previous, start: getTimeFormat(current.startDate), end: getTimeFormat(current.endDate), days: [current.startDate.getDay().toString()] }
+                const newRecord =  { ...previous, start: getTimeFormat(current.startDate), end: getTimeFormat(current.endDate), days: [current.startDate.getDay().toString()] }
 
-            if(previous.days.length > 1) {
-                 const intactDays =  previous.days.filter((day,i)=> {
-                  if (i !== Number(key.split('.')[1])) {
-                   return day
+                if(previous.days.length > 1) {
+                  const intactDays =  previous.days.filter((day,i)=> {
+            
+                    if ( i !== Number(key.split('.')[1])  && !(Number.isInteger(Number(key)) && i < 1)) {
+                      return day
+
+                     }
+                    });
+                    return {...newRecord, days: [ ...intactDays, ...newRecord.days]}
                   }
-                })
-                return {...newRecord, days: [ ...intactDays, ...newRecord.days]}
-                }
-                  return newRecord
-                
+                return newRecord 
               }
-              setRecords({ ...records, [mainId]: makeModifiedRecord(appointmentsRecords[mainId], changed[key])})
+             
+              setRecords({ ...records, [mainId]: makeModifiedRecord(records[mainId], changed[key])})
+          
               // console.log(makeAppointmentModels({1: makeModifiedRecord(appointmentsRecords[mainId], changed[key])}, [1]))
               // const conflict = makeAppointmentModels({1: makeModifiedRecord(appointmentsRecords[mainId], changed[key])}, [1]).filter((item) => !hasNoOverlaps(item, data) ) 
               // console.log(conflict)
-              
           }
         } else {
           // eslint-disable-next-line no-alert
@@ -161,7 +160,6 @@ export default function App() {
       alert(`Overlaps on: ${current.title}`);
       return previous;
     }, data);
-
     setData(newAppointments);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAppointments, records]);
