@@ -1,4 +1,12 @@
-
+/* eslint-disable
+consistent-return,
+array-callback-return,
+object-curly-newline,
+react/jsx-no-bind,
+react/button-has-type,
+no-alert,
+no-inner-declarations,
+react/jsx-props-no-spreading */
 import React, { useState, useCallback, useEffect } from "react";
 import Paper from "@mui/material/Paper";
 import {
@@ -71,7 +79,11 @@ export default function App() {
   const onCommitChanges = useCallback(
     ({ added, changed, deleted }) => {
       if (deleted) {
-        setSelectedAppointments(selectedAppointments.filter((values) => values !== Math.floor(deleted)))
+        const selected = selectedAppointments.filter(
+          (values) => values !== Math.floor(deleted),
+        );
+        setSelectedAppointments(selected);
+        setSelectedValue(selected.join(", "));
       } else {
         const toCheck = added ?? {
           ...(Object.values(changed)[0] as AppointmentModel),
@@ -80,30 +92,64 @@ export default function App() {
 
         if (hasNoOverlaps(toCheck, data)) {
           if (changed) {
-            const key = Object.keys(changed)[0]
-            const mainId = Math.floor(Number(key))
-  
-            function makeModifiedRecord(previous: AppointmentRecord, current: AppointmentModel) {
-                const newRecord =  { ...previous, start: getTimeFormat(current.startDate), end: getTimeFormat(current.endDate), days: [current.startDate.getDay().toString()] }
+            const key = Object.keys(changed)[0];
+            const mainId = Math.floor(Number(key));
 
-                if(previous.days.length > 1) {
-                  const intactDays =  previous.days.filter((day,i)=> {
-            
-                    if ( i !== Number(key.split('.')[1])  && !(Number.isInteger(Number(key)) && i < 1)) {
-                      return day
+            function makeModifiedRecord(
+              previous: AppointmentRecord,
+              current: AppointmentModel,
+            ) {
+              const newRecord = {
+                ...previous,
+                start: getTimeFormat(current.startDate),
+                end: getTimeFormat(current.endDate),
+                days: [current.startDate.getDay().toString()],
+              };
 
-                     }
-                    });
-                    return {...newRecord, days: [ ...intactDays, ...newRecord.days]}
+              if (previous.days.length > 1) {
+                // eslint-disable-next-line array-callback-return
+                const intactDays = previous.days.filter((day, i) => {
+                  if (
+                    i !== Number(key.split(".")[1]) &&
+                    !(Number.isInteger(Number(key)) && i < 1)
+                  ) {
+                    return day;
                   }
-                return newRecord 
+                });
+                return {
+                  ...newRecord,
+                  days: [...intactDays, ...newRecord.days],
+                };
               }
-             
-              setRecords({ ...records, [mainId]: makeModifiedRecord(records[mainId], changed[key])})
-          
-              // console.log(makeAppointmentModels({1: makeModifiedRecord(appointmentsRecords[mainId], changed[key])}, [1]))
-              // const conflict = makeAppointmentModels({1: makeModifiedRecord(appointmentsRecords[mainId], changed[key])}, [1]).filter((item) => !hasNoOverlaps(item, data) ) 
-              // console.log(conflict)
+              return newRecord;
+            }
+
+            setRecords({
+              ...records,
+              [mainId]: makeModifiedRecord(records[mainId], changed[key]),
+            });
+
+            // console.log(
+            //   makeAppointmentModels(
+            //     {
+            //       1: makeModifiedRecord(
+            //         appointmentsRecords[mainId],
+            //         changed[key],
+            //       ),
+            //     },
+            //     [1],
+            //   ),
+            // );
+            // const conflict = makeAppointmentModels(
+            //   {
+            //     1: makeModifiedRecord(
+            //       appointmentsRecords[mainId],
+            //       changed[key],
+            //     ),
+            //   },
+            //   [1],
+            // ).filter((item) => !hasNoOverlaps(item, data));
+            // console.log(conflict);
           }
         } else {
           // eslint-disable-next-line no-alert
@@ -111,6 +157,7 @@ export default function App() {
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [setData, data],
   );
 
