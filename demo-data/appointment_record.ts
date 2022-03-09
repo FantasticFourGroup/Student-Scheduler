@@ -1,4 +1,4 @@
-import { RecordsModel } from "../src/Models";
+import { RecordsModel } from "../src/types/Models";
 
 export const appointmentsRecords: RecordsModel = {
   1: {

@@ -16,9 +16,9 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@mui/material";
-import { resourcesData } from "../demo-data/resources";
+import { resourcesData } from "../../demo-data/resources";
 
-import { AppointmentRecord, RecordsModel } from "./Models";
+import { AppointmentRecord, RecordsModel } from "../Models";
 import ColorSelector from "./ColorSelector";
 import TimePicker from "./TimePicker";
 

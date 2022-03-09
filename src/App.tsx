@@ -28,9 +28,13 @@ import { Button } from "@mui/material";
 import { resourcesData } from "../demo-data/resources";
 import hasNoOverlaps from "./utils/overlapChecker";
 import { emptyAppointmentRecords } from "../demo-data/appointment_record";
-import FormAppointment from "./FormAppointment";
+import FormAppointment from "./components/FormAppointment";
 import { toDate, getTimeFormat } from "./utils/timeFormat";
-import { AppointmentModel, AppointmentRecord, RecordsModel } from "./Models";
+import {
+  AppointmentModel,
+  AppointmentRecord,
+  RecordsModel,
+} from "./types/Models";
 import database from "./utils/firebase";
 
 const currentDate = "2018-06-27";
@@ -145,28 +149,6 @@ export default function App() {
               ...records,
               [mainId]: makeModifiedRecord(records[mainId], changed[key]),
             });
-
-            // console.log(
-            //   makeAppointmentModels(
-            //     {
-            //       1: makeModifiedRecord(
-            //         appointmentsRecords[mainId],
-            //         changed[key],
-            //       ),
-            //     },
-            //     [1],
-            //   ),
-            // );
-            // const conflict = makeAppointmentModels(
-            //   {
-            //     1: makeModifiedRecord(
-            //       appointmentsRecords[mainId],
-            //       changed[key],
-            //     ),
-            //   },
-            //   [1],
-            // ).filter((item) => !hasNoOverlaps(item, data));
-            // console.log(conflict);
           }
         } else {
           // eslint-disable-next-line no-alert
