@@ -120,3 +120,5 @@ export const appointmentsRecords: RecordsModel = {
     colorId: 2,
   },
 };
+
+export const emptyAppointmentRecords: RecordsModel = {};
