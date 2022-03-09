@@ -29,6 +29,7 @@ import { resourcesData } from "../demo-data/resources";
 import hasNoOverlaps from "./utils/overlapChecker";
 import { emptyAppointmentRecords } from "../demo-data/appointment_record";
 import FormAppointment from "./components/FormAppointment";
+import AlertSnackBar from "./components/AlertSnackBar";
 import { toDate, getTimeFormat } from "./utils/timeFormat";
 import {
   AppointmentModel,
@@ -80,6 +81,7 @@ export default function App() {
 
   const [openAppointmentForm, setOpenAppoinmentForm] = useState(false);
   const [editAppointment, setEditAppointment] = useState(0);
+  const [openSnackBar, setOpenSnackBar] = useState(false);
 
   useEffect(() => {
     const appointmentsRef = ref(database, "appointments");
@@ -152,7 +154,7 @@ export default function App() {
           }
         } else {
           // eslint-disable-next-line no-alert
-          alert("You have overlapping Schedule"); // ALERTT
+          setOpenSnackBar(true);
         }
       }
     },
@@ -204,7 +206,8 @@ export default function App() {
       if (hasNoOverlaps(current, previous)) {
         return [...previous, current];
       }
-      alert(`Overlaps on: ${current.title}`);
+      // alert(`Overlaps on: ${current.title}`);
+      setOpenSnackBar(true);
       return previous;
     }, data);
     setData(newAppointments);
@@ -245,6 +248,7 @@ export default function App() {
           </Button>
         </div>
       </div>
+      <AlertSnackBar open={openSnackBar} setOpen={setOpenSnackBar} />
       <Scheduler data={data} height={600}>
         <ViewState currentDate={currentDate} />
         <EditingState onCommitChanges={onCommitChanges} />
