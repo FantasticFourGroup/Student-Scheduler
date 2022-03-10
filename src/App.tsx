@@ -49,13 +49,11 @@ const resources = [
   },
 ];
 
-const sample = [3];
-
 function makeAppointmentModels(
   records: RecordsModel,
   selectedItem: number[],
 ): AppointmentModel[] {
-  if (Object.keys(records).length === 0) {
+  if (Object.keys(records).length === 0 || selectedItem.length === 0) {
     return [];
   }
   return selectedItem.flatMap((item: number) => {
@@ -72,7 +70,9 @@ function makeAppointmentModels(
 
 export default function App() {
   const [records, setRecords] = useState(emptyAppointmentRecords);
-  const [selectedAppointments, setSelectedAppointments] = useState(sample);
+  const [selectedAppointments, setSelectedAppointments] = useState(
+    [] as number[],
+  );
   const [selectedValues, setSelectedValue] = useState(
     selectedAppointments.join(", "),
   );
@@ -84,6 +84,25 @@ export default function App() {
   const [editAppointment, setEditAppointment] = useState(0);
   const [openSnackBar, setOpenSnackBar] = useState(false);
   const [openSubjectModal, setOpenSubjectModal] = useState(false);
+  const [fetched, setFetched] = useState(false);
+
+  function setSelections(value: number[]) {
+    setSelectedAppointments(value);
+    setSelectedValue(value.join(", "));
+  }
+
+  useEffect(() => {
+    const currentScheduleRef = ref(database, "currentSchedule");
+
+    onValue(currentScheduleRef, (snapshot) => {
+      if (!snapshot.exists()) {
+        setSelections([]);
+      } else {
+        setSelections(snapshot.val());
+      }
+      setFetched(true);
+    });
+  }, []);
 
   useEffect(() => {
     const appointmentsRef = ref(database, "appointments");
@@ -97,9 +116,11 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const currentScheduleRef = ref(database, "currentSchedule");
-    set(currentScheduleRef, selectedAppointments);
-  }, [selectedAppointments]);
+    if (fetched) {
+      const currentScheduleRef = ref(database, "currentSchedule");
+      set(currentScheduleRef, selectedAppointments);
+    }
+  }, [selectedAppointments, fetched]);
 
   const onCommitChanges = useCallback(
     ({ added, changed, deleted }) => {
@@ -107,8 +128,7 @@ export default function App() {
         const selected = selectedAppointments.filter(
           (values) => values !== Math.floor(deleted),
         );
-        setSelectedAppointments(selected);
-        setSelectedValue(selected.join(", "));
+        setSelections(selected);
       } else {
         const toCheck = added ?? {
           ...(Object.values(changed)[0] as AppointmentModel),
@@ -198,25 +218,33 @@ export default function App() {
   }
 
   const addSubject = () => {
-    setSelectedAppointments(selectedValues.match(/\d+/gi)!.map(Number));
+    if (selectedValues === "") {
+      setSelectedAppointments([]);
+    } else {
+      setSelectedAppointments(selectedValues.match(/\d+/gi)!.map(Number));
+    }
   };
 
   useEffect(() => {
-    const newAppointments = makeAppointmentModels(
-      records,
-      selectedAppointments,
-    ).reduce((previous, current, i) => {
-      if (i < 1) {
-        return [current];
-      }
-      if (hasNoOverlaps(current, previous)) {
-        return [...previous, current];
-      }
-      // alert(`Overlaps on: ${current.title}`);
-      setOpenSnackBar(true);
-      return previous;
-    }, data);
-    setData(newAppointments);
+    if (selectedAppointments.length === 0) {
+      setData([]);
+    } else {
+      const newAppointments = makeAppointmentModels(
+        records,
+        selectedAppointments,
+      ).reduce((previous, current, i) => {
+        if (i < 1) {
+          return [current];
+        }
+        if (hasNoOverlaps(current, previous)) {
+          return [...previous, current];
+        }
+        // alert(`Overlaps on: ${current.title}`);
+        setOpenSnackBar(true);
+        return previous;
+      }, data);
+      setData(newAppointments);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedAppointments, records]);
 
