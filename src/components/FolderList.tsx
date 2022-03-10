@@ -7,87 +7,61 @@ import ListItemButton from "@mui/material/ListItemButton";
 import Checkbox from "@mui/material/Checkbox";
 import Avatar from "@mui/material/Avatar";
 import ImageIcon from "@mui/icons-material/Image";
-import WorkIcon from "@mui/icons-material/Work";
-import BeachAccessIcon from "@mui/icons-material/BeachAccess";
 
-export default function FolderList() {
-  const items = [
-    {
-      primary: "Photos",
+import { ref, set } from "firebase/database";
+import { RecordsModel } from "../types/Models";
+import database from "../utils/firebase";
+
+interface FolderListProps {
+  records: RecordsModel;
+  appointments: number[];
+}
+
+interface ItemProps {
+  id: number;
+  primary: string;
+  avatar: React.ReactElement;
+  secondary: string;
+  checked: boolean;
+}
+
+export default function FolderList({ records, appointments }: FolderListProps) {
+  const [allRecords, setAllRecords] = React.useState([] as ItemProps[]);
+  const [selectedAppointments, setSelectedAppointments] = React.useState(
+    [] as number[],
+  );
+
+  React.useEffect(() => {
+    const computed = Object.values(records).map((record) => ({
+      id: record.id,
+      primary: record.title,
       avatar: <ImageIcon />,
-      secondary: "Jan 9, 2014",
-    },
-    {
-      primary: "Recipes",
-      avatar: <WorkIcon />,
-      secondary: "Jan 17, 2014",
-    },
-    {
-      primary: "Work",
-      avatar: <BeachAccessIcon />,
-      secondary: "Jan 28, 2014",
-    },
-    {
-      primary: "Photos",
-      avatar: <ImageIcon />,
-      secondary: "Jan 9, 2014",
-    },
-    {
-      primary: "Recipes",
-      avatar: <WorkIcon />,
-      secondary: "Jan 17, 2014",
-    },
-    {
-      primary: "Work",
-      avatar: <BeachAccessIcon />,
-      secondary: "Jan 28, 2014",
-    },
-    {
-      primary: "Photos",
-      avatar: <ImageIcon />,
-      secondary: "Jan 9, 2014",
-    },
-    {
-      primary: "Recipes",
-      avatar: <WorkIcon />,
-      secondary: "Jan 17, 2014",
-    },
-    {
-      primary: "Work",
-      avatar: <BeachAccessIcon />,
-      secondary: "Jan 28, 2014",
-    },
-    {
-      primary: "Photos",
-      avatar: <ImageIcon />,
-      secondary: "Jan 9, 2014",
-    },
-    {
-      primary: "Recipes",
-      avatar: <WorkIcon />,
-      secondary: "Jan 17, 2014",
-    },
-    {
-      primary: "Work",
-      avatar: <BeachAccessIcon />,
-      secondary: "Jan 28, 2014",
-    },
-    {
-      primary: "Photos",
-      avatar: <ImageIcon />,
-      secondary: "Jan 9, 2014",
-    },
-    {
-      primary: "Recipes",
-      avatar: <WorkIcon />,
-      secondary: "Jan 17, 2014",
-    },
-    {
-      primary: "Work",
-      avatar: <BeachAccessIcon />,
-      secondary: "Jan 28, 2014",
-    },
-  ];
+      secondary: record.stubCode,
+      checked: appointments.includes(record.id),
+    }));
+    setAllRecords(computed);
+    setSelectedAppointments(appointments);
+  }, [appointments, records]);
+
+  React.useEffect(() => {
+    const currentScheduleRef = ref(database, "currentSchedule");
+    set(currentScheduleRef, selectedAppointments);
+  }, [selectedAppointments]);
+
+  const handleCheckboxChange = (id: number) => {
+    const newRecords = allRecords.map((record) => {
+      if (record.id === id) {
+        return { ...record, checked: !record.checked };
+      }
+      return record;
+    });
+    const newSelectedAppointments = allRecords
+      .map((record) => (record.checked ? record.id : 0))
+      .filter((item) => item !== 0);
+    setAllRecords(newRecords);
+    setSelectedAppointments(newSelectedAppointments);
+  };
+
   return (
     <List
       sx={{
@@ -98,14 +72,17 @@ export default function FolderList() {
         overflow: "auto",
       }}
     >
-      {items.map((item) => (
-        <ListItem key={item.primary}>
+      {allRecords.map((item) => (
+        <ListItem key={item.id}>
           <ListItemButton>
             <ListItemAvatar>
               <Avatar>{item.avatar}</Avatar>
             </ListItemAvatar>
             <ListItemText primary={item.primary} secondary={item.secondary} />
-            <Checkbox />
+            <Checkbox
+              checked={item.checked}
+              onChange={() => handleCheckboxChange(item.id)}
+            />
           </ListItemButton>
         </ListItem>
       ))}

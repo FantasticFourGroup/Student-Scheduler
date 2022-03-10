@@ -2,6 +2,7 @@ import * as React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
+import { RecordsModel } from "../types/Models";
 
 import FolderList from "./FolderList";
 
@@ -21,11 +22,15 @@ interface SubjectModalProps {
 
   // eslint-disable-next-line no-unused-vars
   setOpenModal: (open: boolean) => void;
+  records: RecordsModel;
+  appointments: number[];
 }
 
 export default function SubjectModal({
   openModal,
   setOpenModal,
+  records,
+  appointments,
 }: SubjectModalProps) {
   const handleClose = () => setOpenModal(false);
 
@@ -46,7 +51,7 @@ export default function SubjectModal({
         >
           Select Subjects
         </Typography>
-        <FolderList />
+        <FolderList records={records} appointments={appointments} />
       </Box>
     </Modal>
   );
