@@ -11,3 +11,7 @@ body {
 .Cell-dayOfMonth {
   display: none;
 }
+
+::-webkit-scrollbar {
+  display: none;
+}
