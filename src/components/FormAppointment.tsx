@@ -172,6 +172,9 @@ export default function FormAppointment({
               onChange={handleSelectDay}
               aria-label="weekDay"
             >
+              <ToggleButton value="0" aria-label="sun">
+                Sun
+              </ToggleButton>
               <ToggleButton value="1" aria-label="mon">
                 Mon
               </ToggleButton>
