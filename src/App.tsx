@@ -172,10 +172,6 @@ export default function App() {
             const newRecord = {
               [mainId]: makeModifiedRecord(records[mainId], changed[key]),
             };
-
-            // const conflicts2 = makeAppointmentModels(newRecord, [mainId]).find(
-            //   (record: AppointmentModel) => !hasNoOverlaps(record, data),
-            // );
             const conflicts = makeAppointmentModels(newRecord, [mainId])
               .filter((record: AppointmentModel) => getOverlaps(record, data))
               .filter(
@@ -188,12 +184,12 @@ export default function App() {
             if (conflicts.length < 1) {
               set(ref(database, "appointments"), {
                 ...records,
-                [mainId]: makeModifiedRecord(records[mainId], changed[key]),
+                ...newRecord,
               });
 
               setRecords({
                 ...records,
-                [mainId]: makeModifiedRecord(records[mainId], changed[key]),
+                ...newRecord,
               });
             } else {
               setOpenSnackBar(true);
