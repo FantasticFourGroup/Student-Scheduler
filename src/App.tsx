@@ -132,7 +132,7 @@ export default function App() {
       } else {
         const toCheck = added ?? {
           ...(Object.values(changed)[0] as AppointmentModel),
-          id: Object.keys(changed)[0],
+          id: Number(Object.keys(changed)[0]),
         };
 
         if (hasNoOverlaps(toCheck, data)) {
