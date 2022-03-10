@@ -1,3 +1,4 @@
+/* eslint-disable implicit-arrow-linebreak */
 /* eslint-disable
 consistent-return,
 array-callback-return,
@@ -25,7 +26,7 @@ import {
 import { ref, set, onValue } from "firebase/database";
 
 import { resourcesData } from "../demo-data/resources";
-import hasNoOverlaps from "./utils/overlapChecker";
+import getOverlaps from "./utils/overlapChecker";
 import { emptyAppointmentRecords } from "../demo-data/appointment_record";
 import FormAppointment from "./components/FormAppointment";
 import AlertSnackBar from "./components/AlertSnackBar";
@@ -133,8 +134,7 @@ export default function App() {
           ...(Object.values(changed)[0] as AppointmentModel),
           id: Number(Object.keys(changed)[0]),
         };
-
-        if (hasNoOverlaps(toCheck, data)) {
+        if (!getOverlaps(toCheck, data)) {
           if (changed) {
             const key = Object.keys(changed)[0];
             const mainId = Math.floor(Number(key));
@@ -168,15 +168,31 @@ export default function App() {
               return newRecord;
             }
 
-            set(ref(database, "appointments"), {
-              ...records,
+            const newRecord = {
               [mainId]: makeModifiedRecord(records[mainId], changed[key]),
-            });
+            };
+            const conflicts = makeAppointmentModels(newRecord, [mainId])
+              .filter((record: AppointmentModel) => getOverlaps(record, data))
+              .filter(
+                (item) =>
+                  !data.find(
+                    (record) => JSON.stringify(item) === JSON.stringify(record),
+                  ),
+              );
 
-            setRecords({
-              ...records,
-              [mainId]: makeModifiedRecord(records[mainId], changed[key]),
-            });
+            if (conflicts.length < 1) {
+              set(ref(database, "appointments"), {
+                ...records,
+                ...newRecord,
+              });
+
+              setRecords({
+                ...records,
+                ...newRecord,
+              });
+            } else {
+              setOpenSnackBar(true);
+            }
           }
         } else {
           setOpenSnackBar(true);
@@ -227,7 +243,7 @@ export default function App() {
         if (i < 1) {
           return [current];
         }
-        if (hasNoOverlaps(current, previous)) {
+        if (!getOverlaps(current, previous)) {
           return [...previous, current];
         }
         // alert(`Overlaps on: ${current.title}`);

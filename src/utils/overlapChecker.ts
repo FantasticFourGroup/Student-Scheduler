@@ -1,4 +1,4 @@
-import { AppointmentModel } from "@devexpress/dx-react-scheduler";
+import { AppointmentModel } from "../types/Models";
 
 export function inRange(start?: Number, end?: Number, num?: Number) {
   if (num && start && end) {
@@ -7,7 +7,7 @@ export function inRange(start?: Number, end?: Number, num?: Number) {
   return false;
 }
 
-export default function hasNoOverlaps(
+export default function getOverlaps(
   appointment: AppointmentModel,
   appointmentList: AppointmentModel[],
 ) {
@@ -18,14 +18,14 @@ export default function hasNoOverlaps(
     ? new Date(appointment.endDate).getTime()
     : undefined;
 
-  const found = appointmentList.find((item) => {
+  const found = appointmentList.filter((item) => {
     const itemStart = new Date(item.startDate).getTime();
     const itemEnd = new Date(item.endDate).getTime();
 
     if (itemStart === appStart && itemEnd === appEnd) {
       return true;
     }
-    if (item.id !== appointment.id) {
+    if (Math.floor(item.id) !== Math.floor(appointment.id)) {
       return (
         inRange(itemStart, itemEnd, appStart) ||
         inRange(itemStart, itemEnd, appEnd) ||
@@ -35,5 +35,5 @@ export default function hasNoOverlaps(
     }
     return false;
   });
-  return !found;
+  return found.length > 0 ? found : undefined;
 }
