@@ -17,5 +17,5 @@ const DEFAULT_DATES: { [key: string]: number } = {
 
 export function toDate(num: string, time: string) {
   const [hour, min] = time.split(":").map(Number);
-  return new Date(2018, 5, DEFAULT_DATES[num], hour, min);
+  return new Date(2018, 5, DEFAULT_DATES[num], hour, min, 0);
 }
