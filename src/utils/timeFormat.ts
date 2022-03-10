@@ -6,6 +6,7 @@ export function getTimeFormat(date: Date) {
 }
 
 const DEFAULT_DATES: { [key: string]: number } = {
+  0: 24,
   1: 25,
   2: 26,
   3: 27,
