@@ -24,12 +24,13 @@ import {
 } from "@devexpress/dx-react-scheduler-material-ui";
 import { ref, set, onValue } from "firebase/database";
 
-import { Button } from "@mui/material";
 import { resourcesData } from "../demo-data/resources";
 import hasNoOverlaps from "./utils/overlapChecker";
 import { emptyAppointmentRecords } from "../demo-data/appointment_record";
 import FormAppointment from "./components/FormAppointment";
 import AlertSnackBar from "./components/AlertSnackBar";
+import OptionsDial from "./components/OptionsDial";
+import SubjectModal from "./components/SubjectModal";
 import { toDate, getTimeFormat } from "./utils/timeFormat";
 import {
   AppointmentModel,
@@ -48,7 +49,7 @@ const resources = [
   },
 ];
 
-const sample = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
+const sample = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
 
 function makeAppointmentModels(
   records: RecordsModel,
@@ -82,6 +83,7 @@ export default function App() {
   const [openAppointmentForm, setOpenAppoinmentForm] = useState(false);
   const [editAppointment, setEditAppointment] = useState(0);
   const [openSnackBar, setOpenSnackBar] = useState(false);
+  const [openSubjectModal, setOpenSubjectModal] = useState(false);
 
   useEffect(() => {
     const appointmentsRef = ref(database, "appointments");
@@ -153,7 +155,6 @@ export default function App() {
             });
           }
         } else {
-          // eslint-disable-next-line no-alert
           setOpenSnackBar(true);
         }
       }
@@ -232,23 +233,11 @@ export default function App() {
         records={records}
         onSubmit={handleSubmit}
       />
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          paddingLeft: "2%",
-          paddingRight: "2%",
-          paddingTop: "1%",
-          paddingBottom: "1%",
-        }}
-      >
-        <div>
-          <Button variant="contained" onClick={handleOpenAppointmentForm}>
-            Create Course Schedule
-          </Button>
-        </div>
-      </div>
       <AlertSnackBar open={openSnackBar} setOpen={setOpenSnackBar} />
+      <SubjectModal
+        openModal={openSubjectModal}
+        setOpenModal={setOpenSubjectModal}
+      />
       <Scheduler data={data} height={600}>
         <ViewState currentDate={currentDate} />
         <EditingState onCommitChanges={onCommitChanges} />
@@ -265,6 +254,10 @@ export default function App() {
         <Resources data={resources} mainResourceName="colorId" />
         <DragDropProvider allowDrag={() => true} allowResize={() => true} />
       </Scheduler>
+      <OptionsDial
+        clickCourse={handleOpenAppointmentForm}
+        clickSubject={setOpenSubjectModal}
+      />
     </Paper>
   );
 }
