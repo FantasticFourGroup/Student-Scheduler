@@ -73,9 +73,7 @@ export default function App() {
   const [selectedAppointments, setSelectedAppointments] = useState(
     [] as number[],
   );
-  const [selectedValues, setSelectedValue] = useState(
-    selectedAppointments.join(", "),
-  );
+  const [, setSelectedValue] = useState(selectedAppointments.join(", "));
   const [data, setData] = useState(
     makeAppointmentModels(records, selectedAppointments),
   );
@@ -217,14 +215,6 @@ export default function App() {
     // setData(makeAppointmentModels(records, selectedAppointments));
   }
 
-  const addSubject = () => {
-    if (selectedValues === "") {
-      setSelectedAppointments([]);
-    } else {
-      setSelectedAppointments(selectedValues.match(/\d+/gi)!.map(Number));
-    }
-  };
-
   useEffect(() => {
     if (selectedAppointments.length === 0) {
       setData([]);
@@ -250,15 +240,6 @@ export default function App() {
 
   return (
     <Paper>
-      <input
-        type="text"
-        style={{ width: 900 }}
-        value={selectedValues}
-        onChange={(e) => {
-          setSelectedValue(e.currentTarget.value);
-        }}
-      />
-      <button onClick={addSubject}>Add schedule</button>
       <FormAppointment
         open={openAppointmentForm}
         close={closeAppointmentForm}
