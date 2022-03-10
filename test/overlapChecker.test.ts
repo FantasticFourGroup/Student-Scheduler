@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
-import { AppointmentModel } from "@devexpress/dx-react-scheduler";
-import hasNoOverlaps, { inRange } from "../src/utils/overlapChecker";
+import { AppointmentModel } from "../src/types/Models";
+import getOverlaps, { inRange } from "../src/utils/overlapChecker";
 
 test("inRange", () => {
   expect(inRange(1, 9, 1)).toBe(false);
@@ -18,57 +18,71 @@ test("inRange", () => {
   expect(inRange(1, 9, 11)).toBe(false);
 });
 
-test("hasNoOverlaps", () => {
-  const dummyData = [
+test("getOverlaps", () => {
+  const dummyData: AppointmentModel[] = [
     {
+      title: "dummy",
       startDate: new Date(2018, 5, 25, 7),
       endDate: new Date(2018, 5, 25, 10),
       id: 0,
     },
     {
+      title: "dummy",
       startDate: new Date(2018, 5, 25, 10),
       endDate: new Date(2018, 5, 25, 11),
       id: 1,
     },
     {
+      title: "dummy",
       startDate: new Date(2018, 5, 25, 16),
       endDate: new Date(2018, 5, 25, 17, 30),
       id: 2,
     },
     {
+      title: "dummy",
+      id: 3,
       startDate: new Date(2018, 5, 26, 7, 0),
       endDate: new Date(2018, 5, 26, 10, 0),
-      id: 3,
     },
   ];
   expect(
-    hasNoOverlaps(
+    getOverlaps(
       {
+        title: "dummy",
         id: 3,
         startDate: new Date(2018, 5, 26, 7, 0),
         endDate: new Date(2018, 5, 26, 11, 0),
       },
       dummyData as AppointmentModel[],
     ),
-  ).toBe(true);
+  ).toBeUndefined();
   expect(
-    hasNoOverlaps(
+    getOverlaps(
       {
+        title: "dummy",
         id: 6,
         startDate: new Date(2018, 5, 26, 7, 0),
         endDate: new Date(2018, 5, 26, 11, 0),
       },
-      dummyData as AppointmentModel[],
+      dummyData,
     ),
-  ).toBe(false);
+  ).toEqual([
+    {
+      title: "dummy",
+      startDate: new Date(2018, 5, 26, 7, 0),
+      endDate: new Date(2018, 5, 26, 10, 0),
+      id: 3,
+    },
+  ]);
   expect(
-    hasNoOverlaps(
+    getOverlaps(
       {
+        title: "dummy",
         id: 6,
         startDate: new Date(2018, 5, 26, 6, 0),
         endDate: new Date(2018, 5, 26, 7, 0),
       },
-      dummyData as AppointmentModel[],
+      dummyData,
     ),
-  ).toBe(true);
+  ).toBeUndefined();
 });
