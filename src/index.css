@@ -15,3 +15,11 @@ body {
 ::-webkit-scrollbar {
   display: none;
 }
+
+.Content-text.Content-dateAndTitle {
+  visibility: hidden;
+}
+
+div.Content-titleContainer path:nth-of-type(1) {
+  display: none;
+}
