@@ -270,6 +270,8 @@ export default function App() {
       <SubjectModal
         openModal={openSubjectModal}
         setOpenModal={setOpenSubjectModal}
+        records={records}
+        appointments={selectedAppointments}
       />
       <Scheduler data={data} height={600}>
         <ViewState currentDate={currentDate} />
