@@ -8,58 +8,35 @@ import Checkbox from "@mui/material/Checkbox";
 import Avatar from "@mui/material/Avatar";
 import ImageIcon from "@mui/icons-material/Image";
 
-import { ref, set } from "firebase/database";
 import { RecordsModel } from "../types/Models";
-import database from "../utils/firebase";
 
 interface FolderListProps {
   records: RecordsModel;
   appointments: number[];
+  setRecords: React.Dispatch<React.SetStateAction<RecordsModel>>;
+  setAppointments: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
-interface ItemProps {
-  id: number;
-  primary: string;
-  avatar: React.ReactElement;
-  secondary: string;
-  checked: boolean;
-}
-
-export default function FolderList({ records, appointments }: FolderListProps) {
-  const [allRecords, setAllRecords] = React.useState([] as ItemProps[]);
-  const [selectedAppointments, setSelectedAppointments] = React.useState(
-    [] as number[],
-  );
-
-  React.useEffect(() => {
-    const computed = Object.values(records).map((record) => ({
-      id: record.id,
-      primary: record.title,
-      avatar: <ImageIcon />,
-      secondary: record.stubCode,
-      checked: appointments.includes(record.id),
-    }));
-    setAllRecords(computed);
-    setSelectedAppointments(appointments);
-  }, [appointments, records]);
-
-  React.useEffect(() => {
-    const currentScheduleRef = ref(database, "currentSchedule");
-    set(currentScheduleRef, selectedAppointments);
-  }, [selectedAppointments]);
-
+export default function FolderList({
+  records,
+  appointments,
+  setRecords,
+  setAppointments,
+}: FolderListProps) {
   const handleCheckboxChange = (id: number) => {
-    const newRecords = allRecords.map((record) => {
-      if (record.id === id) {
-        return { ...record, checked: !record.checked };
-      }
-      return record;
-    });
-    const newSelectedAppointments = allRecords
-      .map((record) => (record.checked ? record.id : 0))
-      .filter((item) => item !== 0);
-    setAllRecords(newRecords);
-    setSelectedAppointments(newSelectedAppointments);
+    const newRecords = {
+      ...records,
+      [id]: {
+        ...records[id],
+        checked: !records[id].checked,
+      },
+    };
+    const newSelectedAppointments: number[] = Object.keys(newRecords)
+      .map(Number)
+      .map((key) => (newRecords[key].checked ? Number(key) : 0))
+      .filter((val) => val !== 0);
+    setRecords(newRecords);
+    setAppointments(newSelectedAppointments);
   };
 
   return (
@@ -72,15 +49,17 @@ export default function FolderList({ records, appointments }: FolderListProps) {
         overflow: "auto",
       }}
     >
-      {allRecords.map((item) => (
+      {Object.values(records).map((item) => (
         <ListItem key={item.id}>
           <ListItemButton>
             <ListItemAvatar>
-              <Avatar>{item.avatar}</Avatar>
+              <Avatar>
+                <ImageIcon />
+              </Avatar>
             </ListItemAvatar>
-            <ListItemText primary={item.primary} secondary={item.secondary} />
+            <ListItemText primary={item.title} secondary={item.stubCode} />
             <Checkbox
-              checked={item.checked}
+              checked={!!appointments.includes(item.id)}
               onChange={() => handleCheckboxChange(item.id)}
             />
           </ListItemButton>

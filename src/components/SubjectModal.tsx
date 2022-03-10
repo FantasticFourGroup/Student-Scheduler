@@ -19,11 +19,12 @@ const style = {
 
 interface SubjectModalProps {
   openModal: boolean;
-
   // eslint-disable-next-line no-unused-vars
   setOpenModal: (open: boolean) => void;
   records: RecordsModel;
   appointments: number[];
+  setRecords: React.Dispatch<React.SetStateAction<RecordsModel>>;
+  setAppointments: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
 export default function SubjectModal({
@@ -31,6 +32,8 @@ export default function SubjectModal({
   setOpenModal,
   records,
   appointments,
+  setRecords,
+  setAppointments,
 }: SubjectModalProps) {
   const handleClose = () => setOpenModal(false);
 
@@ -51,7 +54,12 @@ export default function SubjectModal({
         >
           Select Subjects
         </Typography>
-        <FolderList records={records} appointments={appointments} />
+        <FolderList
+          records={records}
+          appointments={appointments}
+          setRecords={setRecords}
+          setAppointments={setAppointments}
+        />
       </Box>
     </Modal>
   );

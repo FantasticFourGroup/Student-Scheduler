@@ -6,6 +6,7 @@ export interface AppointmentRecord {
   days: string[];
   id: number;
   colorId?: string | number;
+  checked?: boolean;
 }
 
 export interface AppointmentModel {

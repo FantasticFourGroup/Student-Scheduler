@@ -64,6 +64,7 @@ function makeAppointmentModels(
       endDate: toDate(day, end),
       id: Number(`${id}.${i}`),
       colorId,
+      checked: false,
     }));
   });
 }
@@ -253,6 +254,8 @@ export default function App() {
         setOpenModal={setOpenSubjectModal}
         records={records}
         appointments={selectedAppointments}
+        setRecords={setRecords}
+        setAppointments={setSelectedAppointments}
       />
       <Scheduler data={data} height={600}>
         <ViewState currentDate={currentDate} />
