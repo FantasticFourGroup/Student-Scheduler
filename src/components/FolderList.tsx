@@ -10,6 +10,7 @@ import SchoolIcon from "@mui/icons-material/School";
 
 import { RecordsModel } from "../types/Models";
 import { resourcesData } from "../../demo-data/resources";
+import DaySelector from "./DaySelector";
 
 interface FolderListProps {
   records: RecordsModel;
@@ -69,6 +70,7 @@ export default function FolderList({
               primary={`Course Title: ${item.title} - ${item.stubCode}`}
               secondary={`Time: ${item.start} - ${item.end}`}
             />
+            <DaySelector value={item.days} onChange={() => {}} disabled />
             <Checkbox
               checked={!!appointments.includes(item.id)}
               onChange={() => handleCheckboxChange(item.id)}
