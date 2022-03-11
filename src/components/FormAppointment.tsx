@@ -21,6 +21,7 @@ import { resourcesData } from "../../demo-data/resources";
 import { AppointmentRecord, RecordsModel } from "../Models";
 import ColorSelector from "./ColorSelector";
 import TimePicker from "./TimePicker";
+import DaySelector from "./DaySelector";
 
 type AppointmentRecordField =
   | "title"
@@ -167,33 +168,10 @@ export default function FormAppointment({
             />
           </div>
           <div style={mt10}>
-            <ToggleButtonGroup
+            <DaySelector
               value={appointmentRecord.days}
               onChange={handleSelectDay}
-              aria-label="weekDay"
-            >
-              <ToggleButton value="0" aria-label="sun">
-                Sun
-              </ToggleButton>
-              <ToggleButton value="1" aria-label="mon">
-                Mon
-              </ToggleButton>
-              <ToggleButton value="2" aria-label="tues">
-                Tue
-              </ToggleButton>
-              <ToggleButton value="3" aria-label="wed">
-                Wed
-              </ToggleButton>
-              <ToggleButton value="4" aria-label="thu">
-                Thu
-              </ToggleButton>
-              <ToggleButton value="5" aria-label="fri">
-                Fri
-              </ToggleButton>
-              <ToggleButton value="6" aria-label="sat">
-                Sat
-              </ToggleButton>
-            </ToggleButtonGroup>
+            />
           </div>
 
           <div
