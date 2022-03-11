@@ -127,7 +127,8 @@ export default function FormAppointment({
         [appointmentId]: { ...appointmentRecord, id: appointmentId },
       });
     } else {
-      const key = Math.max(...Object.keys(records).map(Number)) + 1;
+      const recordsKey = Object.keys(records).map(Number);
+      const key = recordsKey.length > 1 ? Math.max(...recordsKey) + 1 : 1;
       onSubmit({ ...records, [key]: { ...appointmentRecord, id: key } });
     }
     setAppointmentRecord(emptyAppointment);
