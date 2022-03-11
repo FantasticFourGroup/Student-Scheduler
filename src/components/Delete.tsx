@@ -7,12 +7,14 @@ import ListItemText from "@mui/material/ListItemText";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import ListItemButton from "@mui/material/ListItemButton";
 import Avatar from "@mui/material/Avatar";
-import ImageIcon from "@mui/icons-material/Image";
+import SchoolIcon from "@mui/icons-material/School";
 
 // eslint-disable-next-line object-curly-newline
 import { Box, Button, Modal, Typography } from "@mui/material";
 import { RecordsModel } from "../types/Models";
 import DaySelector from "./DaySelector";
+
+import { resourcesData } from "../../demo-data/resources";
 
 const style = {
   position: "absolute" as "absolute",
@@ -75,8 +77,15 @@ export default function RemoveRecord({
             <ListItem key={item.id}>
               <ListItemButton>
                 <ListItemAvatar>
-                  <Avatar>
-                    <ImageIcon />
+                  <Avatar
+                    sx={{
+                      bgcolor:
+                        resourcesData.find(
+                          (resource) => resource.id === item.colorId,
+                        )?.color || "#42A5F5",
+                    }}
+                  >
+                    <SchoolIcon />
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText primary={item.title} secondary={item.stubCode} />
