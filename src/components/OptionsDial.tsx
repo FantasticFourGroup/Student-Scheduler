@@ -5,6 +5,12 @@ import SpeedDialAction from "@mui/material/SpeedDialAction";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import ClassIcon from "@mui/icons-material/Class";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
+import DataSaverOnIcon from "@mui/icons-material/DataSaverOn";
+
+import { ref, set } from "firebase/database";
+import database from "../utils/firebase";
+
+import { appointmentsRecords } from "../../demo-data/appointment_record";
 
 interface OptionsDialProps {
   clickCourse: () => void;
@@ -44,6 +50,18 @@ export default function OptionsDial({
         icon={<HighlightOffIcon />}
         tooltipTitle="Remove Schedule"
         onClick={handleRemove}
+      />
+      <SpeedDialAction
+        key="data"
+        icon={<DataSaverOnIcon />}
+        tooltipTitle="Add Demo Data"
+        onClick={() => {
+          const currentScheduleRef = ref(database, "currentSchedule");
+          const appointmentsRef = ref(database, "appointments");
+
+          set(appointmentsRef, appointmentsRecords);
+          set(currentScheduleRef, [1]);
+        }}
       />
     </SpeedDial>
   );

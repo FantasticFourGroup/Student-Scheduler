@@ -23,14 +23,11 @@ import {
   DragDropProvider,
   Resources,
 } from "@devexpress/dx-react-scheduler-material-ui";
-import { ref, set, onValue } from "firebase/database";
 
+import { ref, set, onValue } from "firebase/database";
 import { resourcesData } from "../demo-data/resources";
 import getOverlaps from "./utils/overlapChecker";
-import {
-  appointmentsRecords,
-  emptyAppointmentRecords,
-} from "../demo-data/appointment_record";
+import { emptyAppointmentRecords } from "../demo-data/appointment_record";
 import FormAppointment from "./components/FormAppointment";
 import AlertSnackBar from "./components/AlertSnackBar";
 import OptionsDial from "./components/OptionsDial";
@@ -253,18 +250,6 @@ export default function App() {
 
   return (
     <Paper>
-      <button
-        onClick={() => {
-          const currentScheduleRef = ref(database, "currentSchedule");
-          const appointmentsRef = ref(database, "appointments");
-
-          set(appointmentsRef, appointmentsRecords);
-          set(currentScheduleRef, [1]);
-          console.log("refresh");
-        }}
-      >
-        Demo Data
-      </button>
       <RemoveRecord
         selected={selectedAppointments}
         setSelected={setSelectedAppointments}
