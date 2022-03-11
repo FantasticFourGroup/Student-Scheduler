@@ -100,6 +100,7 @@ export default function App() {
       } else {
         setSelectedAppointments(snapshot.val());
       }
+      setFetched(true);
     });
     onValue(appointmentsRef, (snapshot2) => {
       if (!snapshot2.exists()) {
@@ -108,17 +109,7 @@ export default function App() {
       const appointments = snapshot2.val();
       setRecords(appointments);
     });
-    setFetched(true);
   }, []);
-
-  // useEffect(() => {
-  //   console.log("imma in", records);
-  //   if (fetched) {
-  //     console.log("imma in");
-  //     const appointmentsRef = ref(database, "appointments");
-  //     set(appointmentsRef, records);
-  //   }
-  // }, [records, fetched]);
 
   useEffect(() => {
     if (fetched) {
@@ -268,7 +259,7 @@ export default function App() {
           const appointmentsRef = ref(database, "appointments");
 
           set(appointmentsRef, appointmentsRecords);
-          set(currentScheduleRef, []);
+          set(currentScheduleRef, [1]);
           console.log("refresh");
         }}
       >
