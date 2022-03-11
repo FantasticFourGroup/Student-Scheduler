@@ -278,7 +278,7 @@ export default function App() {
         setRecords={setRecords}
         setAppointments={setSelectedAppointments}
       />
-      <Scheduler data={data} height={600}>
+      <Scheduler data={data} height={window.innerHeight}>
         <ViewState currentDate={currentDate} />
         <EditingState onCommitChanges={onCommitChanges} />
 
