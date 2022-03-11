@@ -23,8 +23,8 @@ import {
   DragDropProvider,
   Resources,
 } from "@devexpress/dx-react-scheduler-material-ui";
-import { ref, set, onValue } from "firebase/database";
 
+import { ref, set, onValue } from "firebase/database";
 import { resourcesData } from "../demo-data/resources";
 import getOverlaps from "./utils/overlapChecker";
 import { emptyAppointmentRecords } from "../demo-data/appointment_record";
@@ -39,6 +39,7 @@ import {
   RecordsModel,
 } from "./types/Models";
 import database from "./utils/firebase";
+import RemoveRecord from "./components/Delete";
 
 const currentDate = "2018-06-27";
 
@@ -75,7 +76,6 @@ export default function App() {
   const [selectedAppointments, setSelectedAppointments] = useState(
     [] as number[],
   );
-  const [, setSelectedValue] = useState(selectedAppointments.join(", "));
   const [data, setData] = useState(
     makeAppointmentModels(records, selectedAppointments),
   );
@@ -85,32 +85,25 @@ export default function App() {
   const [openSnackBar, setOpenSnackBar] = useState(false);
   const [openSubjectModal, setOpenSubjectModal] = useState(false);
   const [fetched, setFetched] = useState(false);
-
-  function setSelections(value: number[]) {
-    setSelectedAppointments(value);
-    setSelectedValue(value.join(", "));
-  }
+  const [removeModal, setRemoveModal] = useState(false);
 
   useEffect(() => {
     const currentScheduleRef = ref(database, "currentSchedule");
+    const appointmentsRef = ref(database, "appointments");
 
     onValue(currentScheduleRef, (snapshot) => {
       if (!snapshot.exists()) {
-        setSelections([]);
+        setSelectedAppointments([]);
       } else {
-        setSelections(snapshot.val());
+        setSelectedAppointments(snapshot.val());
       }
       setFetched(true);
     });
-  }, []);
-
-  useEffect(() => {
-    const appointmentsRef = ref(database, "appointments");
-    onValue(appointmentsRef, (snapshot) => {
-      if (!snapshot.exists()) {
+    onValue(appointmentsRef, (snapshot2) => {
+      if (!snapshot2.exists()) {
         return;
       }
-      const appointments = snapshot.val();
+      const appointments = snapshot2.val();
       setRecords(appointments);
     });
   }, []);
@@ -128,7 +121,7 @@ export default function App() {
         const selected = selectedAppointments.filter(
           (values) => values !== Math.floor(deleted),
         );
-        setSelections(selected);
+        setSelectedAppointments(selected);
       } else {
         const toCheck = added ?? {
           ...(Object.values(changed)[0] as AppointmentModel),
@@ -257,6 +250,18 @@ export default function App() {
 
   return (
     <Paper>
+      <RemoveRecord
+        selected={selectedAppointments}
+        setSelected={setSelectedAppointments}
+        records={records}
+        setRecords={setRecords}
+        open={removeModal}
+        onClose={() => {
+          setRemoveModal(false);
+          const appointmentsRef = ref(database, "appointments");
+          set(appointmentsRef, records);
+        }}
+      />
       <FormAppointment
         open={openAppointmentForm}
         close={closeAppointmentForm}
@@ -292,6 +297,7 @@ export default function App() {
       <OptionsDial
         clickCourse={handleOpenAppointmentForm}
         clickSubject={setOpenSubjectModal}
+        clickRemove={setRemoveModal}
       />
     </Paper>
   );

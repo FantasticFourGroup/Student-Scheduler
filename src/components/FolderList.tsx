@@ -6,9 +6,10 @@ import ListItemAvatar from "@mui/material/ListItemAvatar";
 import ListItemButton from "@mui/material/ListItemButton";
 import Checkbox from "@mui/material/Checkbox";
 import Avatar from "@mui/material/Avatar";
-import ImageIcon from "@mui/icons-material/Image";
+import SchoolIcon from "@mui/icons-material/School";
 
 import { RecordsModel } from "../types/Models";
+import { resourcesData } from "../../demo-data/resources";
 
 interface FolderListProps {
   records: RecordsModel;
@@ -53,11 +54,21 @@ export default function FolderList({
         <ListItem key={item.id}>
           <ListItemButton>
             <ListItemAvatar>
-              <Avatar>
-                <ImageIcon />
+              <Avatar
+                sx={{
+                  bgcolor:
+                    resourcesData.find(
+                      (resource) => resource.id === item.colorId,
+                    )?.color || "#42A5F5",
+                }}
+              >
+                <SchoolIcon />
               </Avatar>
             </ListItemAvatar>
-            <ListItemText primary={item.title} secondary={item.stubCode} />
+            <ListItemText
+              primary={`Course Title: ${item.title} - ${item.stubCode}`}
+              secondary={`Time: ${item.start} - ${item.end}`}
+            />
             <Checkbox
               checked={!!appointments.includes(item.id)}
               onChange={() => handleCheckboxChange(item.id)}

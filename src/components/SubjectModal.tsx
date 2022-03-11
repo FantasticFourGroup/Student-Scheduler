@@ -2,8 +2,8 @@ import * as React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
-import { RecordsModel } from "../types/Models";
 
+import { RecordsModel } from "../types/Models";
 import FolderList from "./FolderList";
 
 const style = {
@@ -49,7 +49,11 @@ export default function SubjectModal({
           variant="h6"
           id="modal-modal-title"
           sx={{
-            margin: "10px",
+            marginTop: "1em",
+            marginBottom: "1rem",
+            marginLeft: "30px",
+            fontWeight: "bold",
+            fontFamily: "montserrat",
           }}
         >
           Select Subjects
