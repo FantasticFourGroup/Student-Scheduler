@@ -4,9 +4,9 @@ A student scheduler to manage and track class schedules
 
 [![CircleCI](https://circleci.com/gh/FantasticFourGroup/Student-Scheduler.svg?style=svg)](https://student-scheduler.netlify.app/)
 
-![image](https://user-images.githubusercontent.com/49836841/154983680-b352b28a-cf8f-42aa-b7b7-d617a834a223.png)
+![image](https://user-images.githubusercontent.com/49836841/157787372-649691ee-8f51-40d9-ad8f-8f71141e674f.png)
 
-![image](https://user-images.githubusercontent.com/49836841/154983778-c5626455-15ac-460d-bdd4-dd2a552ce756.png)
+<img width="960" alt="image" src="https://user-images.githubusercontent.com/49836841/157787420-afcea976-8d8b-4b4d-ad04-499877f636a8.png">
 
 
 ## Table of contents
@@ -28,6 +28,7 @@ Technologies used:
 - Typescript - 👨‍💻 A typed superset version of javascript
 - Vite.js - ⚡ Next Generation Frontend Tooling
 - React - ⚛️ A JavaScript library for building user interfaces
+- Firebase - 🔥 - For a real time database
 
 ## Setup Web App
 
@@ -38,17 +39,33 @@ You can also run the project using yarn.
 $ git https://github.com/FantasticFourGroup/Student-Scheduler student-scheduler
 $ cd student-scheduler
 $ npm install
+```
+
+After installing, you have to configure the environment variablees. To do this, create a  **.env** file using the template **.env.example** and set the required
+API secret keys. Make sure to have a firebase account created and a real time database provisioned for this to work.
+
+```bash
+VITE_API_KEY=
+VITE_PROJECT_ID=
+VITE_MESSAGING_SENDER_ID=
+VITE_APP_ID=
+VITE_MEASUREMENT_ID=
+```
+
+After that you can run the app.
+
+```sh
 $ npm run dev
 ```
 
 The following instructions will open the app. You can type [localhost:3000](localhost.3000) in your favorite browser to start using the app.
 
-```sh
-127.0.0.1:3000
-```
 
-or
+You can also test the production build.
 
 ```sh
-localhost:3000
+$ npm run build
+$ npm run preview 
 ```
+
+The following instructions will open the app. You can type [localhost:4173](localhost.4173) to check out the production build.
