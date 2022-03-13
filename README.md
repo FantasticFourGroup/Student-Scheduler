@@ -4,7 +4,7 @@ A student scheduler to manage and track class schedules
 
 [![CircleCI](https://circleci.com/gh/FantasticFourGroup/Student-Scheduler.svg?style=svg)](https://student-scheduler.netlify.app/)
 
-![image](https://user-images.githubusercontent.com/49836841/157787372-649691ee-8f51-40d9-ad8f-8f71141e674f.png)
+![image](https://user-images.githubusercontent.com/49836841/158064250-e961c2c4-3f66-4d58-adc8-a5d1e16106c9.png)
 
 <img width="960" alt="image" src="https://user-images.githubusercontent.com/49836841/157787420-afcea976-8d8b-4b4d-ad04-499877f636a8.png">
 
@@ -13,6 +13,7 @@ A student scheduler to manage and track class schedules
 
 - [General info](#general-info)
 - [Setup Scheduler](#setup-web-app)
+- [Gallery](#gallery)
 
 ## General info
 
@@ -69,3 +70,9 @@ $ npm run preview
 ```
 
 The following instructions will open the app. You can type [localhost:4173](localhost.4173) to check out the production build.
+
+## Gallery
+
+![image](https://user-images.githubusercontent.com/49836841/158064288-bdcbed79-1882-4781-a669-0f29423c5b18.png)
+
+<img width="960" alt="image" src="https://user-images.githubusercontent.com/49836841/158064489-0a7fb270-9d26-4075-a7f2-a98388809b02.png">
