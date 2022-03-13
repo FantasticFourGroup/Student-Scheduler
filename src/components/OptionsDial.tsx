@@ -6,6 +6,7 @@ import EventNoteIcon from "@mui/icons-material/EventNote";
 import ClassIcon from "@mui/icons-material/Class";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import DataSaverOnIcon from "@mui/icons-material/DataSaverOn";
+import CategoryIcon from "@mui/icons-material/Category";
 
 import { ref, set } from "firebase/database";
 import database from "../utils/firebase";
@@ -52,17 +53,24 @@ export default function OptionsDial({
         onClick={handleRemove}
       />
       <SpeedDialAction
-        key="data"
-        icon={<DataSaverOnIcon />}
-        tooltipTitle="Add Demo Data"
-        onClick={() => {
-          const currentScheduleRef = ref(database, "currentSchedule");
-          const appointmentsRef = ref(database, "appointments");
-
-          set(appointmentsRef, appointmentsRecords);
-          set(currentScheduleRef, [1]);
-        }}
+        key="category"
+        icon={<CategoryIcon />}
+        tooltipTitle="Add Category"
       />
+      {!import.meta.env.PROD ? (
+        <SpeedDialAction
+          key="data"
+          icon={<DataSaverOnIcon />}
+          tooltipTitle="Add Demo Data"
+          onClick={() => {
+            const currentScheduleRef = ref(database, "currentSchedule");
+            const appointmentsRef = ref(database, "appointments");
+
+            set(appointmentsRef, appointmentsRecords);
+            set(currentScheduleRef, [1]);
+          }}
+        />
+      ) : null}
     </SpeedDial>
   );
 }
