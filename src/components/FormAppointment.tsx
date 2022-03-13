@@ -107,7 +107,7 @@ export default function FormAppointment({
         (appointmentId &&
           JSON.stringify(appointmentRecord) ===
             JSON.stringify(records[appointmentId])) ||
-        confirm("WARNING!: Your selection will be discarded!")
+        !appointmentId
       ) {
         setAppointmentRecord(emptyAppointment);
         close();

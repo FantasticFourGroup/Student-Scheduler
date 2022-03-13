@@ -32,7 +32,9 @@ import FormAppointment from "./components/FormAppointment";
 import AlertSnackBar from "./components/AlertSnackBar";
 import OptionsDial from "./components/OptionsDial";
 import SubjectModal from "./components/SubjectModal";
+import CategoryModal from "./components/CategoryModal";
 import { toDate, getTimeFormat } from "./utils/timeFormat";
+import { Category } from "./types";
 import {
   AppointmentModel,
   AppointmentRecord,
@@ -76,6 +78,7 @@ export default function App() {
   const [selectedAppointments, setSelectedAppointments] = useState(
     [] as number[],
   );
+  const [categories, setCategories] = useState([] as Category[]);
   const [data, setData] = useState(
     makeAppointmentModels(records, selectedAppointments),
   );
@@ -86,6 +89,7 @@ export default function App() {
   const [openSubjectModal, setOpenSubjectModal] = useState(false);
   const [fetched, setFetched] = useState(false);
   const [removeModal, setRemoveModal] = useState(false);
+  const [categoryModal, setCategoryModal] = useState(false);
 
   useEffect(() => {
     const currentScheduleRef = ref(database, "currentSchedule");
@@ -114,6 +118,19 @@ export default function App() {
       set(currentScheduleRef, selectedAppointments);
     }
   }, [selectedAppointments, fetched]);
+
+  useEffect(() => {
+    if (fetched) {
+      const categoriesRef = ref(database, "categories");
+      onValue(categoriesRef, (snapshot) => {
+        if (!snapshot.exists()) {
+          return;
+        }
+        const categoriesList = snapshot.val();
+        setCategories(categoriesList);
+      });
+    }
+  }, [fetched]);
 
   const onCommitChanges = useCallback(
     ({ added, changed, deleted }) => {
@@ -275,7 +292,16 @@ export default function App() {
         setOpenModal={setOpenSubjectModal}
         records={records}
         appointments={selectedAppointments}
+        categories={categories}
         setRecords={setRecords}
+        setAppointments={setSelectedAppointments}
+      />
+      <CategoryModal
+        openModal={categoryModal}
+        setOpenModal={setCategoryModal}
+        categories={categories}
+        setCategories={setCategories}
+        appointments={selectedAppointments}
         setAppointments={setSelectedAppointments}
       />
       <Scheduler data={data} height={window.innerHeight}>
@@ -298,6 +324,7 @@ export default function App() {
         clickCourse={handleOpenAppointmentForm}
         clickSubject={setOpenSubjectModal}
         clickRemove={setRemoveModal}
+        clickCategory={setCategoryModal}
       />
     </Paper>
   );

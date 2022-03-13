@@ -64,6 +64,19 @@ export default function RemoveRecord({
   return (
     <Modal open={open} onClose={onClose}>
       <Box sx={style}>
+        <Typography
+          variant="h6"
+          id="modal-modal-title"
+          sx={{
+            marginTop: "1em",
+            marginBottom: "1rem",
+            marginLeft: "30px",
+            fontWeight: "bold",
+            fontFamily: "montserrat",
+          }}
+        >
+          Delete Classes
+        </Typography>
         <List
           sx={{
             width: "100%",
