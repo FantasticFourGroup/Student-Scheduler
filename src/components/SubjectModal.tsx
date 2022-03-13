@@ -18,6 +18,8 @@ import { RecordsModel } from "../types/Models";
 import FolderList from "./FolderList";
 import database from "../utils/firebase";
 
+import { Category } from "../types";
+
 const style = {
   position: "absolute" as "absolute",
   top: "50%",
@@ -33,6 +35,7 @@ interface FormDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   appointments: number[];
+  categories: Category[];
 }
 
 interface SubjectModalProps {
@@ -41,11 +44,17 @@ interface SubjectModalProps {
   setOpenModal: (open: boolean) => void;
   records: RecordsModel;
   appointments: number[];
+  categories: Category[];
   setRecords: React.Dispatch<React.SetStateAction<RecordsModel>>;
   setAppointments: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
-function FormDialog({ open, setOpen, appointments }: FormDialogProps) {
+function FormDialog({
+  open,
+  setOpen,
+  appointments,
+  categories,
+}: FormDialogProps) {
   const [name, setName] = React.useState("");
   const handleClose = () => {
     setOpen(false);
@@ -54,6 +63,7 @@ function FormDialog({ open, setOpen, appointments }: FormDialogProps) {
   const handleSave = () => {
     const categoriesRef = ref(database, "categories");
     set(categoriesRef, [
+      ...categories,
       {
         name,
         appointments,
@@ -91,6 +101,7 @@ export default function SubjectModal({
   setOpenModal,
   records,
   appointments,
+  categories,
   setRecords,
   setAppointments,
 }: SubjectModalProps) {
@@ -103,6 +114,7 @@ export default function SubjectModal({
         open={openDialog}
         setOpen={setOpenDialog}
         appointments={appointments}
+        categories={categories}
       />
       <Modal
         open={openModal}

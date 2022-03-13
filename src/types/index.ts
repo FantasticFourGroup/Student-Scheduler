@@ -23,3 +23,8 @@ export interface DataRangeProps {
   date1: { title: string; startDate: Date; endDate: Date; id: number };
   date2: { title: string; startDate: Date; endDate: Date; id: number };
 }
+
+export interface Category {
+  name: string;
+  appointments: number[];
+}
